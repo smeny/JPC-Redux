@@ -33,6 +33,7 @@
 
 package com.github.smeny.jpc.debugger;
 
+import com.github.smeny.jpc.debugger.util.BasicTableModel;
 import com.github.smeny.jpc.debugger.util.UtilityFrame;
 import com.github.smeny.jpc.emulator.memory.AddressSpace;
 import com.github.smeny.jpc.emulator.memory.PhysicalAddressSpace;
@@ -46,7 +47,6 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import java.util.Vector;
 
 public class WatchpointsFrame extends UtilityFrame implements PCListener
@@ -464,11 +464,11 @@ public class WatchpointsFrame extends UtilityFrame implements PCListener
             case 1:
                 return wp.name;
             case 2:
-                return new Boolean(wp.isPrimary);
+                return wp.isPrimary;
             case 3:
                 return String.format("%02x", wp.watchValue);
             case 4:
-                return new Boolean(wp.watchForValue);
+                return wp.watchForValue;
             default:
                 return "";
             }

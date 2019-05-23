@@ -28,6 +28,7 @@
 package com.github.smeny.jpc.emulator.execution.opcodes.rm;
 
 import com.github.smeny.jpc.emulator.execution.Executable;
+import com.github.smeny.jpc.emulator.execution.UCodes;
 import com.github.smeny.jpc.emulator.execution.decoder.Modrm;
 import com.github.smeny.jpc.emulator.execution.decoder.PeekableInputStream;
 import com.github.smeny.jpc.emulator.processor.Processor;

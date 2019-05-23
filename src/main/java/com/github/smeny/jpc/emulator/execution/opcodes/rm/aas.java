@@ -27,16 +27,14 @@
 
 package com.github.smeny.jpc.emulator.execution.opcodes.rm;
 
-import com.github.smeny.jpc.emulator.execution.*;
-import com.github.smeny.jpc.emulator.execution.decoder.*;
-import com.github.smeny.jpc.emulator.processor.*;
-import com.github.smeny.jpc.emulator.processor.fpu64.*;
-import static com.github.smeny.jpc.emulator.processor.Processor.*;
+import com.github.smeny.jpc.emulator.execution.Executable;
+import com.github.smeny.jpc.emulator.execution.StaticOpcodes;
+import com.github.smeny.jpc.emulator.processor.Processor;
 
 public class aas extends Executable
 {
 
-    public aas(int blockStart, int eip, int prefices, PeekableInputStream input)
+    public aas(int blockStart, int eip)
     {
         super(blockStart, eip);
     }

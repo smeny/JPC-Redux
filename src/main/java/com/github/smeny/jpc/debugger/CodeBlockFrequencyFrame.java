@@ -33,8 +33,11 @@
 
 package com.github.smeny.jpc.debugger;
 
+import com.github.smeny.jpc.debugger.util.BasicTableModel;
 import com.github.smeny.jpc.debugger.util.UtilityFrame;
 import com.github.smeny.jpc.emulator.execution.codeblock.CodeBlock;
+import com.github.smeny.jpc.emulator.execution.decoder.Instruction;
+import com.github.smeny.jpc.emulator.memory.AddressSpace;
 
 import javax.swing.*;
 import java.awt.*;

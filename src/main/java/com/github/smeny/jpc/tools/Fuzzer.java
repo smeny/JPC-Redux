@@ -27,14 +27,27 @@
 
 package com.github.smeny.jpc.tools;
 
-import java.io.*;
-import java.util.*;
-import java.net.*;
-import java.lang.reflect.*;
-import javax.xml.parsers.*;
-import org.w3c.dom.*;
-import org.xml.sax.*;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.Calendar;
+import java.util.Formatter;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Fuzzer
 {
@@ -45,14 +58,14 @@ public class Fuzzer
     public static void main(String[] args) throws Exception
     {
         URL[] urls = new URL[]{new File(newJar).toURL()};
-        ClassLoader cl1 = new URLClassLoader(urls, tools.Fuzzer.class.getClassLoader());
+        ClassLoader cl1 = new URLClassLoader(urls, Fuzzer.class.getClassLoader());
         Class opts = cl1.loadClass("com.github.smeny.jpc.j2se.Option");
         Method parse = opts.getMethod("parse", String[].class);
         args = (String[])parse.invoke(opts, (Object)args);
         PCHandle pc1 = new PCHandle(cl1, true, args);
 
         URL[] urls2 = new URL[]{new File(oldJar).toURL()};
-        ClassLoader cl2 = new URLClassLoader(urls2, tools.Fuzzer.class.getClassLoader());
+        ClassLoader cl2 = new URLClassLoader(urls2, Fuzzer.class.getClassLoader());
         PCHandle pc2 = new PCHandle(cl2, false, args);
      
         // will succeed
@@ -111,8 +124,8 @@ public class Fuzzer
         byte[] data2 = new byte[4096];
         for (int i=0; i < 1024*1024; i++)
         {
-            Integer l1 = newpc.savePage(new Integer(i), data1);
-            Integer l2 = oldpc.savePage(new Integer(i), data2);
+            Integer l1 = newpc.savePage(i, data1);
+            Integer l2 = oldpc.savePage(i, data2);
             if (l2 > 0)
                 if (!comparePage(i, data1, data2, log))
                     printAllStates(code, input, newpc.getState(), oldpc.getState(), opclass, disam);

@@ -27,9 +27,16 @@
 
 package com.github.smeny.jpc.tools;
 
-import java.io.*;
-import java.util.*;
-import java.lang.reflect.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class Comparison
 {
@@ -151,9 +158,9 @@ public class Comparison
 
     private static void compareStacks(int espPageIndex, int esp, Method save1, Object newpc, byte[] sdata1, Method save2, Object oldpc,byte[] sdata2, boolean pm, Method load1) throws Exception
     {
-        Integer sl1 = (Integer)save1.invoke(newpc, new Integer(espPageIndex), sdata1, pm);
-        Integer sl2 = (Integer)save2.invoke(oldpc, new Integer(espPageIndex), sdata2, pm);
-        List<Integer> addrs = new ArrayList();
+        Integer sl1 = (Integer)save1.invoke(newpc, espPageIndex, sdata1, pm);
+        Integer sl2 = (Integer)save2.invoke(oldpc, espPageIndex, sdata2, pm);
+        List<Integer> addrs = new ArrayList<>();
         if (sl2 > 0)
             if (!samePage(espPageIndex, sdata1, sdata2, addrs))
             {
@@ -161,14 +168,14 @@ public class Comparison
                 if ((addrs.size() == 1) && ((sdata1[addr]^sdata2[addr]) == 0x10))
                 { // ignore differences from pushing different AF to stack
                     System.out.println("ignoring different AF on stack...");
-                    load1.invoke(newpc, new Integer(espPageIndex), sdata2, pm);
+                    load1.invoke(newpc, espPageIndex, sdata2, pm);
                 }
                 else
                 {
                     printHistory();
                     System.out.println("Error here... look above");
                     printPage(sdata1, sdata2, esp);
-                    load1.invoke(newpc, new Integer(espPageIndex), sdata2, pm);
+                    load1.invoke(newpc, espPageIndex, sdata2, pm);
                 }
             }
     }

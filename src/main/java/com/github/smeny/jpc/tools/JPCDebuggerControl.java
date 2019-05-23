@@ -27,16 +27,13 @@
 
 package com.github.smeny.jpc.tools;
 
-import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
-import java.util.Calendar;
 
 public class JPCDebuggerControl extends EmulatorControl
 {
@@ -130,7 +127,7 @@ public class JPCDebuggerControl extends EmulatorControl
     {
         try {
             int blockLength = (Integer)execute.invoke(debugger);
-            return (String) instructionInfo.invoke(pc, new Integer(blockLength));
+            return (String) instructionInfo.invoke(pc, blockLength);
         } catch (InvocationTargetException e)
         {
             Throwable c = e.getCause();
@@ -156,7 +153,7 @@ public class JPCDebuggerControl extends EmulatorControl
     public void setPhysicalMemory(int addr, byte[] data) throws IOException
     {
         try {
-            setPhysicalMemory.invoke(pc, new Integer(addr), data);
+            setPhysicalMemory.invoke(pc, addr, data);
         } catch (InvocationTargetException e) {throw new RuntimeException(e.getMessage());}
         catch (IllegalAccessException e) {throw new RuntimeException(e.getMessage());}
     }
@@ -164,7 +161,7 @@ public class JPCDebuggerControl extends EmulatorControl
     public Integer getPhysicalPage(Integer page, byte[] data) throws IOException
     {
         try {
-            return (Integer) getPage.invoke(pc, page, data, new Boolean(false));
+            return (Integer) getPage.invoke(pc, page, data, Boolean.FALSE);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (InvocationTargetException e) {
@@ -176,7 +173,7 @@ public class JPCDebuggerControl extends EmulatorControl
     public Integer getLinearPage(Integer page, byte[] data) throws IOException
     {
         try {
-            return (Integer) getPage.invoke(pc, page, data, new Boolean(true));
+            return (Integer) getPage.invoke(pc, page, data, Boolean.TRUE);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (InvocationTargetException e) {

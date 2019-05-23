@@ -69,16 +69,16 @@ public class InterpretedVM86ModeBlock implements Virtual8086ModeCodeBlock {
       b.postInstruction(cpu, current);
       return ret;
     } catch (ProcessorException e) {
-      cpu.eip += current.delta;
+      cpu.eip += current.getDelta();
       if (current.next == null) // branches have already updated eip
       {
         cpu.eip -= getX86Length(); // so eip points at the branch that barfed
       }
       if (!e.pointsToSelf()) {
         if (current.next == null) {
-          cpu.eip += getX86Length() - current.delta;
+          cpu.eip += getX86Length() - current.getDelta();
         } else {
-          cpu.eip += current.next.delta - current.delta;
+          cpu.eip += current.next.getDelta() - current.getDelta();
         }
       }
 
@@ -94,7 +94,7 @@ public class InterpretedVM86ModeBlock implements Virtual8086ModeCodeBlock {
       e.setX86Count(count);
       throw e;
     } catch (SelfModifyingCodeException e) {
-      cpu.eip += current.next.delta;
+      cpu.eip += current.next.getDelta();
       return Branch.Exception;
     } finally {
       b.postBlock(cpu);

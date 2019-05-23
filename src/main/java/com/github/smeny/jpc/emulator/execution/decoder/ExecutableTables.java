@@ -29,9 +29,11 @@
 package com.github.smeny.jpc.emulator.execution.decoder;
 
 import com.github.smeny.jpc.emulator.execution.Executable;
+import com.github.smeny.jpc.emulator.execution.ExecutableParameters;
 import com.github.smeny.jpc.emulator.execution.opcodes.AsciiAdjustAlAfterAddition;
-import com.github.smeny.jpc.emulator.execution.opcodes.AsciiAdjustAxAfterMultiplication;
 import com.github.smeny.jpc.emulator.execution.opcodes.AsciiAdjustAlAfterSubtraction;
+import com.github.smeny.jpc.emulator.execution.opcodes.AsciiAdjustAxAfterMultiplication;
+import com.github.smeny.jpc.emulator.execution.opcodes.Opcode;
 
 public class ExecutableTables {
   public static void populateRMOpcodes(OpcodeDecoder[] ops) {
@@ -151,13 +153,11 @@ public class ExecutableTables {
         }
       }
     };
-    ops[0x11] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        if (Modrm.isMem(input.peek())) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.rm.adc_Ew_Gw_mem(blockStart, eip, prefices, input);
-        } else {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.rm.adc_Ew_Gw(blockStart, eip, prefices, input);
-        }
+    ops[0x11] = (blockStart, eip, prefices, input) -> {
+      if (Modrm.isMem(input.peek())) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.rm.adc_Ew_Gw_mem(blockStart, eip, prefices, input);
+      } else {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.rm.adc_Ew_Gw(blockStart, eip, prefices, input);
       }
     };
     ops[0x12] = new OpcodeDecoder() {
@@ -180,7 +180,7 @@ public class ExecutableTables {
     };
     ops[0x14] = new OpcodeDecoder() {
       public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.rm.adc_AL_Ib(blockStart, eip, prefices, input);
+        return new com.github.smeny.jpc.emulator.execution.opcodes.rm.adc_AL_Ib(blockStart, eip, input);
       }
     };
     ops[0x15] = new OpcodeDecoder() {
@@ -405,11 +405,7 @@ public class ExecutableTables {
       }
     };
     ops[0x36] = null;
-    ops[0x37] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.rm.aaa(blockStart, eip, prefices, input);
-      }
-    };
+    ops[0x37] = (blockStart, eip, prefices, input) -> Opcode.AAA.
     ops[0x38] = new OpcodeDecoder() {
       public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
         if (Modrm.isMem(input.peek())) {
@@ -2061,11 +2057,8 @@ public class ExecutableTables {
         return null;
       }
     };
-    ops[0xd4] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.rm.aam_Ib(blockStart, eip, prefices, input);
-      }
-    };
+    ops[0xd4] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.rm.aam_Ib(blockStart, eip, prefices, input);
+
     ops[0xd5] = new OpcodeDecoder() {
       public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
         return new com.github.smeny.jpc.emulator.execution.opcodes.rm.aad_Ib(blockStart, eip, prefices, input);
@@ -13803,6 +13796,7 @@ public class ExecutableTables {
     ops[0x36] = null;
     ops[0x37] = new OpcodeDecoder() {
       public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
+          ExecutableParameters executableParameters = new ExecutableParameters.Builder(blockStart, eip).build();
         return new AsciiAdjustAlAfterAddition(blockStart, eip, prefices, input);
       }
     };
@@ -38424,73 +38418,61 @@ public class ExecutableTables {
         return new com.github.smeny.jpc.emulator.execution.opcodes.vm.test_o32_rAX_Id(blockStart, eip, prefices, input);
       }
     };
-    ops[0x6aa] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        if (Prefices.isRepne(prefices)) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rep_stosb_a32(blockStart, eip, prefices, input);
-        }
-        if (Prefices.isRep(prefices)) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rep_stosb_a32(blockStart, eip, prefices, input);
-        }
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.stosb_a32(blockStart, eip, prefices, input);
+    ops[0x6aa] = (OpcodeDecoder) (blockStart, eip, prefices, input) -> {
+      if (Prefices.isRepne(prefices)) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rep_stosb_a32(blockStart, eip, prefices, input);
       }
+      if (Prefices.isRep(prefices)) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rep_stosb_a32(blockStart, eip, prefices, input);
+      }
+      return new com.github.smeny.jpc.emulator.execution.opcodes.vm.stosb_a32(blockStart, eip, prefices, input);
     };
-    ops[0x6ab] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        if (Prefices.isRepne(prefices)) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rep_stosd_a32(blockStart, eip, prefices, input);
-        }
-        if (Prefices.isRep(prefices)) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rep_stosd_a32(blockStart, eip, prefices, input);
-        }
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.stosd_a32(blockStart, eip, prefices, input);
+    ops[0x6ab] = (blockStart, eip, prefices, input) -> {
+      if (Prefices.isRepne(prefices)) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rep_stosd_a32(blockStart, eip, prefices, input);
       }
+      if (Prefices.isRep(prefices)) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rep_stosd_a32(blockStart, eip, prefices, input);
+      }
+      return new com.github.smeny.jpc.emulator.execution.opcodes.vm.stosd_a32(blockStart, eip, prefices, input);
     };
-    ops[0x6ac] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        if (Prefices.isRepne(prefices)) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rep_lodsb_a32(blockStart, eip, prefices, input);
-        }
-        if (Prefices.isRep(prefices)) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rep_lodsb_a32(blockStart, eip, prefices, input);
-        }
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.lodsb_a32(blockStart, eip, prefices, input);
+    ops[0x6ac] = (blockStart, eip, prefices, input) -> {
+      if (Prefices.isRepne(prefices)) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rep_lodsb_a32(blockStart, eip, prefices, input);
       }
+      if (Prefices.isRep(prefices)) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rep_lodsb_a32(blockStart, eip, prefices, input);
+      }
+      return new com.github.smeny.jpc.emulator.execution.opcodes.vm.lodsb_a32(blockStart, eip, prefices, input);
     };
-    ops[0x6ad] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        if (Prefices.isRepne(prefices)) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rep_lodsd_a32(blockStart, eip, prefices, input);
-        }
-        if (Prefices.isRep(prefices)) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rep_lodsd_a32(blockStart, eip, prefices, input);
-        }
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.lodsd_a32(blockStart, eip, prefices, input);
+    ops[0x6ad] = (blockStart, eip, prefices, input) -> {
+      if (Prefices.isRepne(prefices)) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rep_lodsd_a32(blockStart, eip, prefices, input);
       }
+      if (Prefices.isRep(prefices)) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rep_lodsd_a32(blockStart, eip, prefices, input);
+      }
+      return new com.github.smeny.jpc.emulator.execution.opcodes.vm.lodsd_a32(blockStart, eip, prefices, input);
     };
-    ops[0x6ae] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        if (Prefices.isRepne(prefices)) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.repne_scasb_a32(blockStart, eip, prefices,
-              input);
-        }
-        if (Prefices.isRep(prefices)) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rep_scasb_a32(blockStart, eip, prefices, input);
-        }
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.scasb_a32(blockStart, eip, prefices, input);
+    ops[0x6ae] = (blockStart, eip, prefices, input) -> {
+      if (Prefices.isRepne(prefices)) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.repne_scasb_a32(blockStart, eip, prefices,
+            input);
       }
+      if (Prefices.isRep(prefices)) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rep_scasb_a32(blockStart, eip, prefices, input);
+      }
+      return new com.github.smeny.jpc.emulator.execution.opcodes.vm.scasb_a32(blockStart, eip, prefices, input);
     };
-    ops[0x6af] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        if (Prefices.isRepne(prefices)) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.repne_scasd_a32(blockStart, eip, prefices,
-              input);
-        }
-        if (Prefices.isRep(prefices)) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rep_scasd_a32(blockStart, eip, prefices, input);
-        }
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.scasd_a32(blockStart, eip, prefices, input);
+    ops[0x6af] = (blockStart, eip, prefices, input) -> {
+      if (Prefices.isRepne(prefices)) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.repne_scasd_a32(blockStart, eip, prefices,
+            input);
       }
+      if (Prefices.isRep(prefices)) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rep_scasd_a32(blockStart, eip, prefices, input);
+      }
+      return new com.github.smeny.jpc.emulator.execution.opcodes.vm.scasd_a32(blockStart, eip, prefices, input);
     };
     ops[0x6b0] = ops[0xb0];
 
@@ -38508,233 +38490,181 @@ public class ExecutableTables {
 
     ops[0x6b7] = ops[0xb7];
 
-    ops[0x6b8] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.mov_rAXr8_Id(blockStart, eip, prefices, input);
-      }
-    };
-    ops[0x6b9] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.mov_rCXr9_Id(blockStart, eip, prefices, input);
-      }
-    };
-    ops[0x6ba] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.mov_rDXr10_Id(blockStart, eip, prefices, input);
-      }
-    };
-    ops[0x6bb] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.mov_rBXr11_Id(blockStart, eip, prefices, input);
-      }
-    };
-    ops[0x6bc] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.mov_rSPr12_Id(blockStart, eip, prefices, input);
-      }
-    };
-    ops[0x6bd] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.mov_rBPr13_Id(blockStart, eip, prefices, input);
-      }
-    };
-    ops[0x6be] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.mov_rSIr14_Id(blockStart, eip, prefices, input);
-      }
-    };
-    ops[0x6bf] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.mov_rDIr15_Id(blockStart, eip, prefices, input);
-      }
-    };
+    ops[0x6b8] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.mov_rAXr8_Id(blockStart, eip, prefices, input);
+    ops[0x6b9] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.mov_rCXr9_Id(blockStart, eip, prefices, input);
+    ops[0x6ba] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.mov_rDXr10_Id(blockStart, eip, prefices, input);
+    ops[0x6bb] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.mov_rBXr11_Id(blockStart, eip, prefices, input);
+    ops[0x6bc] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.mov_rSPr12_Id(blockStart, eip, prefices, input);
+    ops[0x6bd] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.mov_rBPr13_Id(blockStart, eip, prefices, input);
+    ops[0x6be] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.mov_rSIr14_Id(blockStart, eip, prefices, input);
+    ops[0x6bf] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.mov_rDIr15_Id(blockStart, eip, prefices, input);
     ops[0x6c0] = ops[0xc0];
 
-    ops[0x6c1] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        int modrm = input.peek() & 0xFF;
-        int reg = (modrm >> 3) & 7;
-        if (modrm < 0xC0) {
-          switch (reg) {
-            case 0x00:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rol_Ed_Ib_mem(blockStart, eip, prefices,
-                  input);
-            case 0x01:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.ror_Ed_Ib_mem(blockStart, eip, prefices,
-                  input);
-            case 0x02:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rcl_Ed_Ib_mem(blockStart, eip, prefices,
-                  input);
-            case 0x03:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
-                  prefices, input);
-            case 0x04:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shl_Ed_Ib_mem(blockStart, eip, prefices,
-                  input);
-            case 0x05:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shr_Ed_Ib_mem(blockStart, eip, prefices,
-                  input);
-            case 0x06:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shl_Ed_Ib_mem(blockStart, eip, prefices,
-                  input);
-            case 0x07:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.sar_Ed_Ib_mem(blockStart, eip, prefices,
-                  input);
-          }
-        } else {
-          switch (reg) {
-            case 0x00:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rol_Ed_Ib(blockStart, eip, prefices, input);
-            case 0x01:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.ror_Ed_Ib(blockStart, eip, prefices, input);
-            case 0x02:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rcl_Ed_Ib(blockStart, eip, prefices, input);
-            case 0x03:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
-                  prefices, input);
-            case 0x04:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shl_Ed_Ib(blockStart, eip, prefices, input);
-            case 0x05:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shr_Ed_Ib(blockStart, eip, prefices, input);
-            case 0x06:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shl_Ed_Ib(blockStart, eip, prefices, input);
-            case 0x07:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.sar_Ed_Ib(blockStart, eip, prefices, input);
-          }
+    ops[0x6c1] = (blockStart, eip, prefices, input) -> {
+      int modrm = input.peek() & 0xFF;
+      int reg = (modrm >> 3) & 7;
+      if (modrm < 0xC0) {
+        switch (reg) {
+          case 0x00:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rol_Ed_Ib_mem(blockStart, eip, prefices,
+                input);
+          case 0x01:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.ror_Ed_Ib_mem(blockStart, eip, prefices,
+                input);
+          case 0x02:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rcl_Ed_Ib_mem(blockStart, eip, prefices,
+                input);
+          case 0x03:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
+                prefices, input);
+          case 0x04:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shl_Ed_Ib_mem(blockStart, eip, prefices,
+                input);
+          case 0x05:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shr_Ed_Ib_mem(blockStart, eip, prefices,
+                input);
+          case 0x06:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shl_Ed_Ib_mem(blockStart, eip, prefices,
+                input);
+          case 0x07:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.sar_Ed_Ib_mem(blockStart, eip, prefices,
+                input);
         }
-        return null;
+      } else {
+        switch (reg) {
+          case 0x00:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rol_Ed_Ib(blockStart, eip, prefices, input);
+          case 0x01:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.ror_Ed_Ib(blockStart, eip, prefices, input);
+          case 0x02:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rcl_Ed_Ib(blockStart, eip, prefices, input);
+          case 0x03:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
+                prefices, input);
+          case 0x04:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shl_Ed_Ib(blockStart, eip, prefices, input);
+          case 0x05:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shr_Ed_Ib(blockStart, eip, prefices, input);
+          case 0x06:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shl_Ed_Ib(blockStart, eip, prefices, input);
+          case 0x07:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.sar_Ed_Ib(blockStart, eip, prefices, input);
+        }
       }
+      return null;
     };
     ops[0x6c2] = ops[0xc2];
 
-    ops[0x6c3] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.ret_o32(blockStart, eip, prefices, input);
-      }
-    };
-    ops[0x6c4] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        int modrm = input.peek() & 0xFF;
-        int reg = (modrm >> 3) & 7;
-        if (modrm < 0xC0) {
-          switch (reg) {
-            case 0x00:
-            case 0x01:
-            case 0x02:
-            case 0x03:
-            case 0x04:
-            case 0x05:
-            case 0x06:
-            case 0x07:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.les_o32_Gd_M_mem(blockStart, eip, prefices,
-                  input);
-          }
-        } else {
-          switch (reg) {
-            case 0x00:
-            case 0x01:
-            case 0x02:
-            case 0x03:
-            case 0x04:
-            case 0x05:
-            case 0x06:
-            case 0x07:
-              input.read8();
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode/*(Disassembler.java line 189)*/(
-                  blockStart, eip, prefices, input);
-          }
+    ops[0x6c3] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.ret_o32(blockStart, eip, prefices, input);
+    ops[0x6c4] = (blockStart, eip, prefices, input) -> {
+      int modrm = input.peek() & 0xFF;
+      int reg = (modrm >> 3) & 7;
+      if (modrm < 0xC0) {
+        switch (reg) {
+          case 0x00:
+          case 0x01:
+          case 0x02:
+          case 0x03:
+          case 0x04:
+          case 0x05:
+          case 0x06:
+          case 0x07:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.les_o32_Gd_M_mem(blockStart, eip, prefices,
+                input);
         }
-        return null;
-      }
-    };
-    ops[0x6c5] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        int modrm = input.peek() & 0xFF;
-        int reg = (modrm >> 3) & 7;
-        if (modrm < 0xC0) {
-          switch (reg) {
-            case 0x00:
-            case 0x01:
-            case 0x02:
-            case 0x03:
-            case 0x04:
-            case 0x05:
-            case 0x06:
-            case 0x07:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.lds_o32_Gd_M_mem(blockStart, eip, prefices,
-                  input);
-          }
-        } else {
-          switch (reg) {
-            case 0x00:
-            case 0x01:
-            case 0x02:
-            case 0x03:
-            case 0x04:
-            case 0x05:
-            case 0x06:
-            case 0x07:
-              input.read8();
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode/*(Disassembler.java line 189)*/(
-                  blockStart, eip, prefices, input);
-          }
+      } else {
+        switch (reg) {
+          case 0x00:
+          case 0x01:
+          case 0x02:
+          case 0x03:
+          case 0x04:
+          case 0x05:
+          case 0x06:
+          case 0x07:
+            input.read8();
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode/*(Disassembler.java line 189)*/(
+                blockStart, eip, prefices, input);
         }
-        return null;
       }
+      return null;
+    };
+    ops[0x6c5] = (blockStart, eip, prefices, input) -> {
+      int modrm = input.peek() & 0xFF;
+      int reg = (modrm >> 3) & 7;
+      if (modrm < 0xC0) {
+        switch (reg) {
+          case 0x00:
+          case 0x01:
+          case 0x02:
+          case 0x03:
+          case 0x04:
+          case 0x05:
+          case 0x06:
+          case 0x07:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.lds_o32_Gd_M_mem(blockStart, eip, prefices,
+                input);
+        }
+      } else {
+        switch (reg) {
+          case 0x00:
+          case 0x01:
+          case 0x02:
+          case 0x03:
+          case 0x04:
+          case 0x05:
+          case 0x06:
+          case 0x07:
+            input.read8();
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode/*(Disassembler.java line 189)*/(
+                blockStart, eip, prefices, input);
+        }
+      }
+      return null;
     };
     ops[0x6c6] = ops[0xc6];
 
-    ops[0x6c7] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        int modrm = input.peek() & 0xFF;
-        int reg = (modrm >> 3) & 7;
-        if (modrm < 0xC0) {
-          switch (reg) {
-            case 0x00:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.mov_Ed_Id_mem(blockStart, eip, prefices,
-                  input);
-            case 0x01:
-            case 0x02:
-            case 0x03:
-            case 0x04:
-            case 0x05:
-            case 0x06:
-            case 0x07:
-              input.read8();
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
-                  input);
-          }
-        } else {
-          switch (reg) {
-            case 0x00:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.mov_Ed_Id(blockStart, eip, prefices, input);
-            case 0x01:
-            case 0x02:
-            case 0x03:
-            case 0x04:
-            case 0x05:
-            case 0x06:
-            case 0x07:
-              input.read8();
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
-                  input);
-          }
+    ops[0x6c7] = (blockStart, eip, prefices, input) -> {
+      int modrm = input.peek() & 0xFF;
+      int reg = (modrm >> 3) & 7;
+      if (modrm < 0xC0) {
+        switch (reg) {
+          case 0x00:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.mov_Ed_Id_mem(blockStart, eip, prefices,
+                input);
+          case 0x01:
+          case 0x02:
+          case 0x03:
+          case 0x04:
+          case 0x05:
+          case 0x06:
+          case 0x07:
+            input.read8();
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
+                input);
         }
-        return null;
+      } else {
+        switch (reg) {
+          case 0x00:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.mov_Ed_Id(blockStart, eip, prefices, input);
+          case 0x01:
+          case 0x02:
+          case 0x03:
+          case 0x04:
+          case 0x05:
+          case 0x06:
+          case 0x07:
+            input.read8();
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
+                input);
+        }
       }
+      return null;
     };
-    ops[0x6c8] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
-            input);
-      }
-    };
-    ops[0x6c9] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
-            input);
-      }
-    };
+    ops[0x6c8] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+        input);
+    ops[0x6c9] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+        input);
     ops[0x6ca] = ops[0xca];
 
     ops[0x6cb] = ops[0xcb];
@@ -38745,123 +38675,115 @@ public class ExecutableTables {
 
     ops[0x6ce] = ops[0xce];
 
-    ops[0x6cf] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
-            input);
-      }
-    };
+    ops[0x6cf] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+        input);
     ops[0x6d0] = ops[0xd0];
 
-    ops[0x6d1] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        int modrm = input.peek() & 0xFF;
-        int reg = (modrm >> 3) & 7;
-        if (modrm < 0xC0) {
-          switch (reg) {
-            case 0x00:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rol_Ed_I1_mem(blockStart, eip, prefices,
-                  input);
-            case 0x01:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.ror_Ed_I1_mem(blockStart, eip, prefices,
-                  input);
-            case 0x02:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rcl_Ed_I1_mem(blockStart, eip, prefices,
-                  input);
-            case 0x03:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rcr_Ed_I1_mem(blockStart, eip, prefices,
-                  input);
-            case 0x04:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shl_Ed_I1_mem(blockStart, eip, prefices,
-                  input);
-            case 0x05:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shr_Ed_I1_mem(blockStart, eip, prefices,
-                  input);
-            case 0x06:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shl_Ed_I1_mem(blockStart, eip, prefices,
-                  input);
-            case 0x07:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.sar_Ed_I1_mem(blockStart, eip, prefices,
-                  input);
-          }
-        } else {
-          switch (reg) {
-            case 0x00:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rol_Ed_I1(blockStart, eip, prefices, input);
-            case 0x01:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.ror_Ed_I1(blockStart, eip, prefices, input);
-            case 0x02:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rcl_Ed_I1(blockStart, eip, prefices, input);
-            case 0x03:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rcr_Ed_I1(blockStart, eip, prefices, input);
-            case 0x04:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shl_Ed_I1(blockStart, eip, prefices, input);
-            case 0x05:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shr_Ed_I1(blockStart, eip, prefices, input);
-            case 0x06:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shl_Ed_I1(blockStart, eip, prefices, input);
-            case 0x07:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.sar_Ed_I1(blockStart, eip, prefices, input);
-          }
+    ops[0x6d1] = (blockStart, eip, prefices, input) -> {
+      int modrm = input.peek() & 0xFF;
+      int reg = (modrm >> 3) & 7;
+      if (modrm < 0xC0) {
+        switch (reg) {
+          case 0x00:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rol_Ed_I1_mem(blockStart, eip, prefices,
+                input);
+          case 0x01:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.ror_Ed_I1_mem(blockStart, eip, prefices,
+                input);
+          case 0x02:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rcl_Ed_I1_mem(blockStart, eip, prefices,
+                input);
+          case 0x03:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rcr_Ed_I1_mem(blockStart, eip, prefices,
+                input);
+          case 0x04:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shl_Ed_I1_mem(blockStart, eip, prefices,
+                input);
+          case 0x05:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shr_Ed_I1_mem(blockStart, eip, prefices,
+                input);
+          case 0x06:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shl_Ed_I1_mem(blockStart, eip, prefices,
+                input);
+          case 0x07:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.sar_Ed_I1_mem(blockStart, eip, prefices,
+                input);
         }
-        return null;
+      } else {
+        switch (reg) {
+          case 0x00:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rol_Ed_I1(blockStart, eip, prefices, input);
+          case 0x01:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.ror_Ed_I1(blockStart, eip, prefices, input);
+          case 0x02:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rcl_Ed_I1(blockStart, eip, prefices, input);
+          case 0x03:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rcr_Ed_I1(blockStart, eip, prefices, input);
+          case 0x04:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shl_Ed_I1(blockStart, eip, prefices, input);
+          case 0x05:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shr_Ed_I1(blockStart, eip, prefices, input);
+          case 0x06:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shl_Ed_I1(blockStart, eip, prefices, input);
+          case 0x07:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.sar_Ed_I1(blockStart, eip, prefices, input);
+        }
       }
+      return null;
     };
     ops[0x6d2] = ops[0xd2];
 
-    ops[0x6d3] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        int modrm = input.peek() & 0xFF;
-        int reg = (modrm >> 3) & 7;
-        if (modrm < 0xC0) {
-          switch (reg) {
-            case 0x00:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rol_Ed_CL_mem(blockStart, eip, prefices,
-                  input);
-            case 0x01:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.ror_Ed_CL_mem(blockStart, eip, prefices,
-                  input);
-            case 0x02:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rcl_Ed_CL_mem(blockStart, eip, prefices,
-                  input);
-            case 0x03:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rcr_Ed_CL_mem(blockStart, eip, prefices,
-                  input);
-            case 0x04:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shl_Ed_CL_mem(blockStart, eip, prefices,
-                  input);
-            case 0x05:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shr_Ed_CL_mem(blockStart, eip, prefices,
-                  input);
-            case 0x06:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shl_Ed_CL_mem(blockStart, eip, prefices,
-                  input);
-            case 0x07:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.sar_Ed_CL_mem(blockStart, eip, prefices,
-                  input);
-          }
-        } else {
-          switch (reg) {
-            case 0x00:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rol_Ed_CL(blockStart, eip, prefices, input);
-            case 0x01:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.ror_Ed_CL(blockStart, eip, prefices, input);
-            case 0x02:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rcl_Ed_CL(blockStart, eip, prefices, input);
-            case 0x03:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rcr_Ed_CL(blockStart, eip, prefices, input);
-            case 0x04:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shl_Ed_CL(blockStart, eip, prefices, input);
-            case 0x05:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shr_Ed_CL(blockStart, eip, prefices, input);
-            case 0x06:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shl_Ed_CL(blockStart, eip, prefices, input);
-            case 0x07:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.sar_Ed_CL(blockStart, eip, prefices, input);
-          }
+    ops[0x6d3] = (blockStart, eip, prefices, input) -> {
+      int modrm = input.peek() & 0xFF;
+      int reg = (modrm >> 3) & 7;
+      if (modrm < 0xC0) {
+        switch (reg) {
+          case 0x00:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rol_Ed_CL_mem(blockStart, eip, prefices,
+                input);
+          case 0x01:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.ror_Ed_CL_mem(blockStart, eip, prefices,
+                input);
+          case 0x02:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rcl_Ed_CL_mem(blockStart, eip, prefices,
+                input);
+          case 0x03:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rcr_Ed_CL_mem(blockStart, eip, prefices,
+                input);
+          case 0x04:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shl_Ed_CL_mem(blockStart, eip, prefices,
+                input);
+          case 0x05:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shr_Ed_CL_mem(blockStart, eip, prefices,
+                input);
+          case 0x06:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shl_Ed_CL_mem(blockStart, eip, prefices,
+                input);
+          case 0x07:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.sar_Ed_CL_mem(blockStart, eip, prefices,
+                input);
         }
-        return null;
+      } else {
+        switch (reg) {
+          case 0x00:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rol_Ed_CL(blockStart, eip, prefices, input);
+          case 0x01:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.ror_Ed_CL(blockStart, eip, prefices, input);
+          case 0x02:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rcl_Ed_CL(blockStart, eip, prefices, input);
+          case 0x03:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.rcr_Ed_CL(blockStart, eip, prefices, input);
+          case 0x04:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shl_Ed_CL(blockStart, eip, prefices, input);
+          case 0x05:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shr_Ed_CL(blockStart, eip, prefices, input);
+          case 0x06:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shl_Ed_CL(blockStart, eip, prefices, input);
+          case 0x07:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.sar_Ed_CL(blockStart, eip, prefices, input);
+        }
       }
+      return null;
     };
     ops[0x6d4] = ops[0xd4];
 
@@ -38869,208 +38791,202 @@ public class ExecutableTables {
 
     ops[0x6d6] = ops[0xd6];
 
-    ops[0x6d7] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.xlatb_a32(blockStart, eip, prefices, input);
-      }
-    };
+    ops[0x6d7] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.xlatb_a32(blockStart, eip, prefices, input);
     ops[0x6d8] = ops[0xd8];
 
-    ops[0x6d9] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        int modrm = input.peek() & 0xFF;
-        int reg = (modrm >> 3) & 7;
-        if (modrm < 0xC0) {
-          switch (reg) {
-            case 0x00:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fld_Md_mem(blockStart, eip, prefices,
-                  input);
-            case 0x01:
-              input.read8();
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
-                  input);
-            case 0x02:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fst_Md_mem(blockStart, eip, prefices,
-                  input);
-            case 0x03:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fstp_Md_mem(blockStart, eip, prefices,
-                  input);
-            case 0x04:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fldenv_o32_M_mem(blockStart, eip, prefices,
-                  input);
-            case 0x05:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fldcw_Mw_mem(blockStart, eip, prefices,
-                  input);
-            case 0x06:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fnstenv_o32_M_mem(blockStart, eip, prefices,
-                  input);
-            case 0x07:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fnstcw_Mw_mem(blockStart, eip, prefices,
-                  input);
-          }
+    ops[0x6d9] = (blockStart, eip, prefices, input) -> {
+      int modrm = input.peek() & 0xFF;
+      int reg = (modrm >> 3) & 7;
+      if (modrm < 0xC0) {
+        switch (reg) {
+          case 0x00:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fld_Md_mem(blockStart, eip, prefices,
+                input);
+          case 0x01:
+            input.read8();
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
+                input);
+          case 0x02:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fst_Md_mem(blockStart, eip, prefices,
+                input);
+          case 0x03:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fstp_Md_mem(blockStart, eip, prefices,
+                input);
+          case 0x04:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fldenv_o32_M_mem(blockStart, eip, prefices,
+                input);
+          case 0x05:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fldcw_Mw_mem(blockStart, eip, prefices,
+                input);
+          case 0x06:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fnstenv_o32_M_mem(blockStart, eip, prefices,
+                input);
+          case 0x07:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fnstcw_Mw_mem(blockStart, eip, prefices,
+                input);
         }
-        switch (modrm) {
-          case 0xc0:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fld_ST0_ST0(blockStart, eip, prefices, input);
-          case 0xc1:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fld_ST0_ST1(blockStart, eip, prefices, input);
-          case 0xc2:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fld_ST0_ST2(blockStart, eip, prefices, input);
-          case 0xc3:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fld_ST0_ST3(blockStart, eip, prefices, input);
-          case 0xc4:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fld_ST0_ST4(blockStart, eip, prefices, input);
-          case 0xc5:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fld_ST0_ST5(blockStart, eip, prefices, input);
-          case 0xc6:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fld_ST0_ST6(blockStart, eip, prefices, input);
-          case 0xc7:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fld_ST0_ST7(blockStart, eip, prefices, input);
-          case 0xc8:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fxch_ST0_ST0(blockStart, eip, prefices,
-                input);
-          case 0xc9:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fxch_ST0_ST1(blockStart, eip, prefices,
-                input);
-          case 0xca:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fxch_ST0_ST2(blockStart, eip, prefices,
-                input);
-          case 0xcb:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fxch_ST0_ST3(blockStart, eip, prefices,
-                input);
-          case 0xcc:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fxch_ST0_ST4(blockStart, eip, prefices,
-                input);
-          case 0xcd:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fxch_ST0_ST5(blockStart, eip, prefices,
-                input);
-          case 0xce:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fxch_ST0_ST6(blockStart, eip, prefices,
-                input);
-          case 0xcf:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fxch_ST0_ST7(blockStart, eip, prefices,
-                input);
-          case 0xd0:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
-                input);
-          case 0xd1:
-          case 0xd2:
-          case 0xd3:
-          case 0xd4:
-          case 0xd5:
-          case 0xd6:
-          case 0xd7:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
-                input);
-          case 0xd8:
-          case 0xd9:
-          case 0xda:
-          case 0xdb:
-          case 0xdc:
-          case 0xdd:
-          case 0xde:
-          case 0xdf:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
-                input);
-          case 0xe0:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fchs(blockStart, eip, prefices, input);
-          case 0xe1:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fabs(blockStart, eip, prefices, input);
-          case 0xe2:
-          case 0xe3:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
-                input);
-          case 0xe4:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.ftst(blockStart, eip, prefices, input);
-          case 0xe5:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fxam(blockStart, eip, prefices, input);
-          case 0xe6:
-          case 0xe7:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
-                input);
-          case 0xe8:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fld1(blockStart, eip, prefices, input);
-          case 0xe9:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fldl2t(blockStart, eip, prefices, input);
-          case 0xea:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fldl2e(blockStart, eip, prefices, input);
-          case 0xeb:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fldpi(blockStart, eip, prefices, input);
-          case 0xec:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fldlg2(blockStart, eip, prefices, input);
-          case 0xed:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fldln2(blockStart, eip, prefices, input);
-          case 0xee:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fldz(blockStart, eip, prefices, input);
-          case 0xef:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
-                input);
-          case 0xf0:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.f2xm1(blockStart, eip, prefices, input);
-          case 0xf1:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fyl2x(blockStart, eip, prefices, input);
-          case 0xf2:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fptan(blockStart, eip, prefices, input);
-          case 0xf3:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fpatan(blockStart, eip, prefices, input);
-          case 0xf4:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
-                input);
-          case 0xf5:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fprem1(blockStart, eip, prefices, input);
-          case 0xf6:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
-                input);
-          case 0xf7:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fincstp(blockStart, eip, prefices, input);
-          case 0xf8:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fprem(blockStart, eip, prefices, input);
-          case 0xf9:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fyl2xp1(blockStart, eip, prefices, input);
-          case 0xfa:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fsqrt(blockStart, eip, prefices, input);
-          case 0xfb:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
-                input);
-          case 0xfc:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.frndint(blockStart, eip, prefices, input);
-          case 0xfd:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fscale(blockStart, eip, prefices, input);
-          case 0xfe:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fsin(blockStart, eip, prefices, input);
-          case 0xff:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fcos(blockStart, eip, prefices, input);
-        }
-        return null;
       }
+      switch (modrm) {
+        case 0xc0:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fld_ST0_ST0(blockStart, eip, prefices, input);
+        case 0xc1:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fld_ST0_ST1(blockStart, eip, prefices, input);
+        case 0xc2:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fld_ST0_ST2(blockStart, eip, prefices, input);
+        case 0xc3:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fld_ST0_ST3(blockStart, eip, prefices, input);
+        case 0xc4:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fld_ST0_ST4(blockStart, eip, prefices, input);
+        case 0xc5:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fld_ST0_ST5(blockStart, eip, prefices, input);
+        case 0xc6:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fld_ST0_ST6(blockStart, eip, prefices, input);
+        case 0xc7:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fld_ST0_ST7(blockStart, eip, prefices, input);
+        case 0xc8:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fxch_ST0_ST0(blockStart, eip, prefices,
+              input);
+        case 0xc9:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fxch_ST0_ST1(blockStart, eip, prefices,
+              input);
+        case 0xca:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fxch_ST0_ST2(blockStart, eip, prefices,
+              input);
+        case 0xcb:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fxch_ST0_ST3(blockStart, eip, prefices,
+              input);
+        case 0xcc:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fxch_ST0_ST4(blockStart, eip, prefices,
+              input);
+        case 0xcd:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fxch_ST0_ST5(blockStart, eip, prefices,
+              input);
+        case 0xce:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fxch_ST0_ST6(blockStart, eip, prefices,
+              input);
+        case 0xcf:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fxch_ST0_ST7(blockStart, eip, prefices,
+              input);
+        case 0xd0:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+              input);
+        case 0xd1:
+        case 0xd2:
+        case 0xd3:
+        case 0xd4:
+        case 0xd5:
+        case 0xd6:
+        case 0xd7:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
+              input);
+        case 0xd8:
+        case 0xd9:
+        case 0xda:
+        case 0xdb:
+        case 0xdc:
+        case 0xdd:
+        case 0xde:
+        case 0xdf:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+              input);
+        case 0xe0:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fchs(blockStart, eip, prefices, input);
+        case 0xe1:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fabs(blockStart, eip, prefices, input);
+        case 0xe2:
+        case 0xe3:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
+              input);
+        case 0xe4:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.ftst(blockStart, eip, prefices, input);
+        case 0xe5:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fxam(blockStart, eip, prefices, input);
+        case 0xe6:
+        case 0xe7:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
+              input);
+        case 0xe8:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fld1(blockStart, eip, prefices, input);
+        case 0xe9:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fldl2t(blockStart, eip, prefices, input);
+        case 0xea:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fldl2e(blockStart, eip, prefices, input);
+        case 0xeb:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fldpi(blockStart, eip, prefices, input);
+        case 0xec:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fldlg2(blockStart, eip, prefices, input);
+        case 0xed:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fldln2(blockStart, eip, prefices, input);
+        case 0xee:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fldz(blockStart, eip, prefices, input);
+        case 0xef:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
+              input);
+        case 0xf0:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.f2xm1(blockStart, eip, prefices, input);
+        case 0xf1:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fyl2x(blockStart, eip, prefices, input);
+        case 0xf2:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fptan(blockStart, eip, prefices, input);
+        case 0xf3:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fpatan(blockStart, eip, prefices, input);
+        case 0xf4:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+              input);
+        case 0xf5:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fprem1(blockStart, eip, prefices, input);
+        case 0xf6:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+              input);
+        case 0xf7:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fincstp(blockStart, eip, prefices, input);
+        case 0xf8:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fprem(blockStart, eip, prefices, input);
+        case 0xf9:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fyl2xp1(blockStart, eip, prefices, input);
+        case 0xfa:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fsqrt(blockStart, eip, prefices, input);
+        case 0xfb:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+              input);
+        case 0xfc:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.frndint(blockStart, eip, prefices, input);
+        case 0xfd:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fscale(blockStart, eip, prefices, input);
+        case 0xfe:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fsin(blockStart, eip, prefices, input);
+        case 0xff:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fcos(blockStart, eip, prefices, input);
+      }
+      return null;
     };
     ops[0x6da] = ops[0xda];
 
@@ -39078,213 +38994,175 @@ public class ExecutableTables {
 
     ops[0x6dc] = ops[0xdc];
 
-    ops[0x6dd] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        int modrm = input.peek() & 0xFF;
-        int reg = (modrm >> 3) & 7;
-        if (modrm < 0xC0) {
-          switch (reg) {
-            case 0x00:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fld_Mq_mem(blockStart, eip, prefices,
-                  input);
-            case 0x01:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
-                  prefices, input);
-            case 0x02:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fst_Mq_mem(blockStart, eip, prefices,
-                  input);
-            case 0x03:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fstp_Mq_mem(blockStart, eip, prefices,
-                  input);
-            case 0x04:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.frstor_o32_M_mem(blockStart, eip, prefices,
-                  input);
-            case 0x05:
-              input.read8();
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
-                  input);
-            case 0x06:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fnsave_o32_M_mem(blockStart, eip, prefices,
-                  input);
-            case 0x07:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fnstsw_Mw_mem(blockStart, eip, prefices,
-                  input);
-          }
-        }
-        switch (modrm) {
-          case 0xc0:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.ffree_ST0(blockStart, eip, prefices, input);
-          case 0xc1:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.ffree_ST1(blockStart, eip, prefices, input);
-          case 0xc2:
-          case 0xc3:
-          case 0xc4:
-          case 0xc5:
-          case 0xc6:
-          case 0xc7:
-          case 0xc8:
-          case 0xc9:
-          case 0xca:
-          case 0xcb:
-          case 0xcc:
-          case 0xcd:
-          case 0xce:
-          case 0xcf:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+    ops[0x6dd] = (blockStart, eip, prefices, input) -> {
+      int modrm = input.peek() & 0xFF;
+      int reg = (modrm >> 3) & 7;
+      if (modrm < 0xC0) {
+        switch (reg) {
+          case 0x00:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fld_Mq_mem(blockStart, eip, prefices,
                 input);
-          case 0xd0:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fst_ST0(blockStart, eip, prefices, input);
-          case 0xd1:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fst_ST1(blockStart, eip, prefices, input);
-          case 0xd2:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fst_ST2(blockStart, eip, prefices, input);
-          case 0xd3:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fst_ST3(blockStart, eip, prefices, input);
-          case 0xd4:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fst_ST4(blockStart, eip, prefices, input);
-          case 0xd5:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fst_ST5(blockStart, eip, prefices, input);
-          case 0xd6:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fst_ST6(blockStart, eip, prefices, input);
-          case 0xd7:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fst_ST7(blockStart, eip, prefices, input);
-          case 0xd8:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fstp_ST0(blockStart, eip, prefices, input);
-          case 0xd9:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fstp_ST1(blockStart, eip, prefices, input);
-          case 0xda:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fstp_ST2(blockStart, eip, prefices, input);
-          case 0xdb:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fstp_ST3(blockStart, eip, prefices, input);
-          case 0xdc:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fstp_ST4(blockStart, eip, prefices, input);
-          case 0xdd:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fstp_ST5(blockStart, eip, prefices, input);
-          case 0xde:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fstp_ST6(blockStart, eip, prefices, input);
-          case 0xdf:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fstp_ST7(blockStart, eip, prefices, input);
-          case 0xe0:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucom_ST0(blockStart, eip, prefices, input);
-          case 0xe1:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucom_ST1(blockStart, eip, prefices, input);
-          case 0xe2:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucom_ST2(blockStart, eip, prefices, input);
-          case 0xe3:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucom_ST3(blockStart, eip, prefices, input);
-          case 0xe4:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucom_ST4(blockStart, eip, prefices, input);
-          case 0xe5:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucom_ST5(blockStart, eip, prefices, input);
-          case 0xe6:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucom_ST6(blockStart, eip, prefices, input);
-          case 0xe7:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucom_ST7(blockStart, eip, prefices, input);
-          case 0xe8:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucomp_ST0(blockStart, eip, prefices, input);
-          case 0xe9:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucomp_ST1(blockStart, eip, prefices, input);
-          case 0xea:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucomp_ST2(blockStart, eip, prefices, input);
-          case 0xeb:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucomp_ST3(blockStart, eip, prefices, input);
-          case 0xec:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucomp_ST4(blockStart, eip, prefices, input);
-          case 0xed:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucomp_ST5(blockStart, eip, prefices, input);
-          case 0xee:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucomp_ST6(blockStart, eip, prefices, input);
-          case 0xef:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucomp_ST7(blockStart, eip, prefices, input);
-          case 0xf0:
-          case 0xf1:
-          case 0xf2:
-          case 0xf3:
-          case 0xf4:
-          case 0xf5:
-          case 0xf6:
-          case 0xf7:
-          case 0xf8:
-          case 0xf9:
-          case 0xfa:
-          case 0xfb:
-          case 0xfc:
-          case 0xfd:
-          case 0xfe:
-          case 0xff:
+          case 0x01:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
+                prefices, input);
+          case 0x02:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fst_Mq_mem(blockStart, eip, prefices,
+                input);
+          case 0x03:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fstp_Mq_mem(blockStart, eip, prefices,
+                input);
+          case 0x04:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.frstor_o32_M_mem(blockStart, eip, prefices,
+                input);
+          case 0x05:
             input.read8();
             return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
                 input);
+          case 0x06:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fnsave_o32_M_mem(blockStart, eip, prefices,
+                input);
+          case 0x07:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fnstsw_Mw_mem(blockStart, eip, prefices,
+                input);
         }
-        return null;
       }
+      switch (modrm) {
+        case 0xc0:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.ffree_ST0(blockStart, eip, prefices, input);
+        case 0xc1:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.ffree_ST1(blockStart, eip, prefices, input);
+        case 0xc2:
+        case 0xc3:
+        case 0xc4:
+        case 0xc5:
+        case 0xc6:
+        case 0xc7:
+        case 0xc8:
+        case 0xc9:
+        case 0xca:
+        case 0xcb:
+        case 0xcc:
+        case 0xcd:
+        case 0xce:
+        case 0xcf:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+              input);
+        case 0xd0:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fst_ST0(blockStart, eip, prefices, input);
+        case 0xd1:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fst_ST1(blockStart, eip, prefices, input);
+        case 0xd2:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fst_ST2(blockStart, eip, prefices, input);
+        case 0xd3:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fst_ST3(blockStart, eip, prefices, input);
+        case 0xd4:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fst_ST4(blockStart, eip, prefices, input);
+        case 0xd5:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fst_ST5(blockStart, eip, prefices, input);
+        case 0xd6:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fst_ST6(blockStart, eip, prefices, input);
+        case 0xd7:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fst_ST7(blockStart, eip, prefices, input);
+        case 0xd8:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fstp_ST0(blockStart, eip, prefices, input);
+        case 0xd9:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fstp_ST1(blockStart, eip, prefices, input);
+        case 0xda:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fstp_ST2(blockStart, eip, prefices, input);
+        case 0xdb:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fstp_ST3(blockStart, eip, prefices, input);
+        case 0xdc:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fstp_ST4(blockStart, eip, prefices, input);
+        case 0xdd:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fstp_ST5(blockStart, eip, prefices, input);
+        case 0xde:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fstp_ST6(blockStart, eip, prefices, input);
+        case 0xdf:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fstp_ST7(blockStart, eip, prefices, input);
+        case 0xe0:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucom_ST0(blockStart, eip, prefices, input);
+        case 0xe1:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucom_ST1(blockStart, eip, prefices, input);
+        case 0xe2:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucom_ST2(blockStart, eip, prefices, input);
+        case 0xe3:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucom_ST3(blockStart, eip, prefices, input);
+        case 0xe4:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucom_ST4(blockStart, eip, prefices, input);
+        case 0xe5:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucom_ST5(blockStart, eip, prefices, input);
+        case 0xe6:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucom_ST6(blockStart, eip, prefices, input);
+        case 0xe7:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucom_ST7(blockStart, eip, prefices, input);
+        case 0xe8:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucomp_ST0(blockStart, eip, prefices, input);
+        case 0xe9:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucomp_ST1(blockStart, eip, prefices, input);
+        case 0xea:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucomp_ST2(blockStart, eip, prefices, input);
+        case 0xeb:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucomp_ST3(blockStart, eip, prefices, input);
+        case 0xec:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucomp_ST4(blockStart, eip, prefices, input);
+        case 0xed:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucomp_ST5(blockStart, eip, prefices, input);
+        case 0xee:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucomp_ST6(blockStart, eip, prefices, input);
+        case 0xef:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.fucomp_ST7(blockStart, eip, prefices, input);
+        case 0xf0:
+        case 0xf1:
+        case 0xf2:
+        case 0xf3:
+        case 0xf4:
+        case 0xf5:
+        case 0xf6:
+        case 0xf7:
+        case 0xf8:
+        case 0xf9:
+        case 0xfa:
+        case 0xfb:
+        case 0xfc:
+        case 0xfd:
+        case 0xfe:
+        case 0xff:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
+              input);
+      }
+      return null;
     };
     ops[0x6de] = ops[0xde];
 
     ops[0x6df] = ops[0xdf];
 
-    ops[0x6e0] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
-            input);
-      }
-    };
-    ops[0x6e1] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
-            input);
-      }
-    };
-    ops[0x6e2] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.loop_a32_Jb(blockStart, eip, prefices, input);
-      }
-    };
-    ops[0x6e3] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.jecxz_Jb(blockStart, eip, prefices, input);
-      }
-    };
+    ops[0x6e0] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+        input);
+    ops[0x6e1] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+        input);
+    ops[0x6e2] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.loop_a32_Jb(blockStart, eip, prefices, input);
+    ops[0x6e3] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.jecxz_Jb(blockStart, eip, prefices, input);
     ops[0x6e4] = ops[0xe4];
 
-    ops[0x6e5] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
-            input);
-      }
-    };
+    ops[0x6e5] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+        input);
     ops[0x6e6] = ops[0xe6];
 
     ops[0x6e7] = ops[0xe7];
 
-    ops[0x6e8] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.call_Jd(blockStart, eip, prefices, input);
-      }
-    };
-    ops[0x6e9] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.jmp_Jd(blockStart, eip, prefices, input);
-      }
-    };
+    ops[0x6e8] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.call_Jd(blockStart, eip, prefices, input);
+    ops[0x6e9] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.jmp_Jd(blockStart, eip, prefices, input);
     ops[0x6ea] = ops[0xea];
 
     ops[0x6eb] = ops[0xeb];
 
     ops[0x6ec] = ops[0xec];
 
-    ops[0x6ed] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.in_o32_eAX_DX(blockStart, eip, prefices, input);
-      }
-    };
+    ops[0x6ed] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.in_o32_eAX_DX(blockStart, eip, prefices, input);
     ops[0x6ee] = ops[0xee];
 
-    ops[0x6ef] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.out_o32_DX_eAX(blockStart, eip, prefices, input);
-      }
-    };
+    ops[0x6ef] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.out_o32_DX_eAX(blockStart, eip, prefices, input);
     ops[0x6f0] = null;
     ops[0x6f1] = ops[0xf1];
 
@@ -39296,57 +39174,55 @@ public class ExecutableTables {
 
     ops[0x6f6] = ops[0xf6];
 
-    ops[0x6f7] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        int modrm = input.peek() & 0xFF;
-        int reg = (modrm >> 3) & 7;
-        if (modrm < 0xC0) {
-          switch (reg) {
-            case 0x00:
-            case 0x01:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.test_Ed_Id_mem(blockStart, eip, prefices,
-                  input);
-            case 0x02:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.not_Ed_mem(blockStart, eip, prefices,
-                  input);
-            case 0x03:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.neg_Ed_mem(blockStart, eip, prefices,
-                  input);
-            case 0x04:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.mul_Ed_mem(blockStart, eip, prefices,
-                  input);
-            case 0x05:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.imul_Ed_mem(blockStart, eip, prefices,
-                  input);
-            case 0x06:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.div_Ed_mem(blockStart, eip, prefices,
-                  input);
-            case 0x07:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.idiv_Ed_mem(blockStart, eip, prefices,
-                  input);
-          }
-        } else {
-          switch (reg) {
-            case 0x00:
-            case 0x01:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.test_Ed_Id(blockStart, eip, prefices,
-                  input);
-            case 0x02:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.not_Ed(blockStart, eip, prefices, input);
-            case 0x03:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.neg_Ed(blockStart, eip, prefices, input);
-            case 0x04:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.mul_Ed(blockStart, eip, prefices, input);
-            case 0x05:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.imul_Ed(blockStart, eip, prefices, input);
-            case 0x06:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.div_Ed(blockStart, eip, prefices, input);
-            case 0x07:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.idiv_Ed(blockStart, eip, prefices, input);
-          }
+    ops[0x6f7] = (blockStart, eip, prefices, input) -> {
+      int modrm = input.peek() & 0xFF;
+      int reg = (modrm >> 3) & 7;
+      if (modrm < 0xC0) {
+        switch (reg) {
+          case 0x00:
+          case 0x01:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.test_Ed_Id_mem(blockStart, eip, prefices,
+                input);
+          case 0x02:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.not_Ed_mem(blockStart, eip, prefices,
+                input);
+          case 0x03:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.neg_Ed_mem(blockStart, eip, prefices,
+                input);
+          case 0x04:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.mul_Ed_mem(blockStart, eip, prefices,
+                input);
+          case 0x05:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.imul_Ed_mem(blockStart, eip, prefices,
+                input);
+          case 0x06:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.div_Ed_mem(blockStart, eip, prefices,
+                input);
+          case 0x07:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.idiv_Ed_mem(blockStart, eip, prefices,
+                input);
         }
-        return null;
+      } else {
+        switch (reg) {
+          case 0x00:
+          case 0x01:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.test_Ed_Id(blockStart, eip, prefices,
+                input);
+          case 0x02:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.not_Ed(blockStart, eip, prefices, input);
+          case 0x03:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.neg_Ed(blockStart, eip, prefices, input);
+          case 0x04:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.mul_Ed(blockStart, eip, prefices, input);
+          case 0x05:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.imul_Ed(blockStart, eip, prefices, input);
+          case 0x06:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.div_Ed(blockStart, eip, prefices, input);
+          case 0x07:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.idiv_Ed(blockStart, eip, prefices, input);
+        }
       }
+      return null;
     };
     ops[0x6f8] = ops[0xf8];
 
@@ -39362,243 +39238,237 @@ public class ExecutableTables {
 
     ops[0x6fe] = ops[0xfe];
 
-    ops[0x6ff] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        int modrm = input.peek() & 0xFF;
-        int reg = (modrm >> 3) & 7;
-        if (modrm < 0xC0) {
-          switch (reg) {
-            case 0x00:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.inc_Ed_mem(blockStart, eip, prefices,
-                  input);
-            case 0x01:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.dec_Ed_mem(blockStart, eip, prefices,
-                  input);
-            case 0x02:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.call_o32_Ed_mem(blockStart, eip, prefices,
-                  input);
-            case 0x03:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
-                  prefices, input);
-            case 0x04:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.jmp_Ed_mem(blockStart, eip, prefices,
-                  input);
-            case 0x05:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.jmp_Ep_mem(blockStart, eip, prefices,
-                  input);
-            case 0x06:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.push_Ed_mem(blockStart, eip, prefices,
-                  input);
-            case 0x07:
-              input.read8();
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
-                  input);
-          }
-        } else {
-          switch (reg) {
-            case 0x00:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.inc_Ed(blockStart, eip, prefices, input);
-            case 0x01:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.dec_Ed(blockStart, eip, prefices, input);
-            case 0x02:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.call_o32_Ed(blockStart, eip, prefices,
-                  input);
-            case 0x03:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
-                  prefices, input);
-            case 0x04:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.jmp_Ed(blockStart, eip, prefices, input);
-            case 0x05:
-              input.read8();
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
-                  input);
-            case 0x06:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.push_Ed(blockStart, eip, prefices, input);
-            case 0x07:
-              input.read8();
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
-                  input);
-          }
+    ops[0x6ff] = (blockStart, eip, prefices, input) -> {
+      int modrm = input.peek() & 0xFF;
+      int reg = (modrm >> 3) & 7;
+      if (modrm < 0xC0) {
+        switch (reg) {
+          case 0x00:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.inc_Ed_mem(blockStart, eip, prefices,
+                input);
+          case 0x01:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.dec_Ed_mem(blockStart, eip, prefices,
+                input);
+          case 0x02:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.call_o32_Ed_mem(blockStart, eip, prefices,
+                input);
+          case 0x03:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
+                prefices, input);
+          case 0x04:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.jmp_Ed_mem(blockStart, eip, prefices,
+                input);
+          case 0x05:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.jmp_Ep_mem(blockStart, eip, prefices,
+                input);
+          case 0x06:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.push_Ed_mem(blockStart, eip, prefices,
+                input);
+          case 0x07:
+            input.read8();
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
+                input);
         }
-        return null;
+      } else {
+        switch (reg) {
+          case 0x00:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.inc_Ed(blockStart, eip, prefices, input);
+          case 0x01:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.dec_Ed(blockStart, eip, prefices, input);
+          case 0x02:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.call_o32_Ed(blockStart, eip, prefices,
+                input);
+          case 0x03:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
+                prefices, input);
+          case 0x04:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.jmp_Ed(blockStart, eip, prefices, input);
+          case 0x05:
+            input.read8();
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
+                input);
+          case 0x06:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.push_Ed(blockStart, eip, prefices, input);
+          case 0x07:
+            input.read8();
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
+                input);
+        }
       }
+      return null;
     };
-    ops[0x700] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        int modrm = input.peek() & 0xFF;
-        int reg = (modrm >> 3) & 7;
-        if (modrm < 0xC0) {
-          switch (reg) {
-            case 0x00:
-            case 0x01:
-            case 0x02:
-            case 0x03:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
-                  prefices, input);
-            case 0x04:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.verr_Ew_mem(blockStart, eip, prefices,
-                  input);
-            case 0x05:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
-                  prefices, input);
-            case 0x06:
-            case 0x07:
-              input.read8();
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
-                  input);
-          }
-        } else {
-          switch (reg) {
-            case 0x00:
-            case 0x01:
-            case 0x02:
-            case 0x03:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
-                  prefices, input);
-            case 0x04:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.verr_Ew(blockStart, eip, prefices, input);
-            case 0x05:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
-                  prefices, input);
-            case 0x06:
-            case 0x07:
-              input.read8();
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
-                  input);
-          }
+    ops[0x700] = (blockStart, eip, prefices, input) -> {
+      int modrm = input.peek() & 0xFF;
+      int reg = (modrm >> 3) & 7;
+      if (modrm < 0xC0) {
+        switch (reg) {
+          case 0x00:
+          case 0x01:
+          case 0x02:
+          case 0x03:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
+                prefices, input);
+          case 0x04:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.verr_Ew_mem(blockStart, eip, prefices,
+                input);
+          case 0x05:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
+                prefices, input);
+          case 0x06:
+          case 0x07:
+            input.read8();
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
+                input);
         }
-        return null;
+      } else {
+        switch (reg) {
+          case 0x00:
+          case 0x01:
+          case 0x02:
+          case 0x03:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
+                prefices, input);
+          case 0x04:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.verr_Ew(blockStart, eip, prefices, input);
+          case 0x05:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
+                prefices, input);
+          case 0x06:
+          case 0x07:
+            input.read8();
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
+                input);
+        }
       }
+      return null;
     };
-    ops[0x701] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        int modrm = input.peek() & 0xFF;
-        int reg = (modrm >> 3) & 7;
-        if (modrm < 0xC0) {
-          switch (reg) {
-            case 0x00:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
-                  prefices, input);
-            case 0x01:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
-                  prefices, input);
-            case 0x02:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
-                  prefices, input);
-            case 0x03:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
-                  prefices, input);
-            case 0x04:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
-                  prefices, input);
-            case 0x05:
-              input.read8();
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
-                  input);
-            case 0x06:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
-                  prefices, input);
-            case 0x07:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
-                  prefices, input);
-          }
+    ops[0x701] = (blockStart, eip, prefices, input) -> {
+      int modrm = input.peek() & 0xFF;
+      int reg = (modrm >> 3) & 7;
+      if (modrm < 0xC0) {
+        switch (reg) {
+          case 0x00:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
+                prefices, input);
+          case 0x01:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
+                prefices, input);
+          case 0x02:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
+                prefices, input);
+          case 0x03:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
+                prefices, input);
+          case 0x04:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
+                prefices, input);
+          case 0x05:
+            input.read8();
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
+                input);
+          case 0x06:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
+                prefices, input);
+          case 0x07:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
+                prefices, input);
         }
-        switch (modrm) {
-          case 0xc0:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
-                input);
-          case 0xc1:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
-                input);
-          case 0xc2:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
-                input);
-          case 0xc3:
-          case 0xc4:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
-                input);
-          case 0xc5:
-          case 0xc6:
-          case 0xc7:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
-                input);
-          case 0xc8:
-          case 0xc9:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
-                input);
-          case 0xca:
-          case 0xcb:
-          case 0xcc:
-          case 0xcd:
-          case 0xce:
-          case 0xcf:
-          case 0xd0:
-          case 0xd1:
-          case 0xd2:
-          case 0xd3:
-          case 0xd4:
-          case 0xd5:
-          case 0xd6:
-          case 0xd7:
-          case 0xd8:
-          case 0xd9:
-          case 0xda:
-          case 0xdb:
-          case 0xdc:
-          case 0xdd:
-          case 0xde:
-          case 0xdf:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
-                input);
-          case 0xe0:
-          case 0xe1:
-          case 0xe2:
-          case 0xe3:
-          case 0xe4:
-          case 0xe5:
-          case 0xe6:
-          case 0xe7:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
-                input);
-          case 0xe8:
-          case 0xe9:
-          case 0xea:
-          case 0xeb:
-          case 0xec:
-          case 0xed:
-          case 0xee:
-          case 0xef:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
-                input);
-          case 0xf0:
-          case 0xf1:
-          case 0xf2:
-          case 0xf3:
-          case 0xf4:
-          case 0xf5:
-          case 0xf6:
-          case 0xf7:
-          case 0xf8:
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
-                input);
-          case 0xf9:
-          case 0xfa:
-          case 0xfb:
-          case 0xfc:
-          case 0xfd:
-          case 0xfe:
-          case 0xff:
-            input.read8();
-            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
-                input);
-        }
-        return null;
       }
+      switch (modrm) {
+        case 0xc0:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
+              input);
+        case 0xc1:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+              input);
+        case 0xc2:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
+              input);
+        case 0xc3:
+        case 0xc4:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+              input);
+        case 0xc5:
+        case 0xc6:
+        case 0xc7:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
+              input);
+        case 0xc8:
+        case 0xc9:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+              input);
+        case 0xca:
+        case 0xcb:
+        case 0xcc:
+        case 0xcd:
+        case 0xce:
+        case 0xcf:
+        case 0xd0:
+        case 0xd1:
+        case 0xd2:
+        case 0xd3:
+        case 0xd4:
+        case 0xd5:
+        case 0xd6:
+        case 0xd7:
+        case 0xd8:
+        case 0xd9:
+        case 0xda:
+        case 0xdb:
+        case 0xdc:
+        case 0xdd:
+        case 0xde:
+        case 0xdf:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
+              input);
+        case 0xe0:
+        case 0xe1:
+        case 0xe2:
+        case 0xe3:
+        case 0xe4:
+        case 0xe5:
+        case 0xe6:
+        case 0xe7:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+              input);
+        case 0xe8:
+        case 0xe9:
+        case 0xea:
+        case 0xeb:
+        case 0xec:
+        case 0xed:
+        case 0xee:
+        case 0xef:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
+              input);
+        case 0xf0:
+        case 0xf1:
+        case 0xf2:
+        case 0xf3:
+        case 0xf4:
+        case 0xf5:
+        case 0xf6:
+        case 0xf7:
+        case 0xf8:
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+              input);
+        case 0xf9:
+        case 0xfa:
+        case 0xfb:
+        case 0xfc:
+        case 0xfd:
+        case 0xfe:
+        case 0xff:
+          input.read8();
+          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
+              input);
+      }
+      return null;
     };
     ops[0x702] = ops[0x102];
 
@@ -39803,29 +39673,25 @@ public class ExecutableTables {
 
     ops[0x76b] = ops[0x16b];
 
-    ops[0x76c] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        if (Prefices.isRepne(prefices)) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices, input);
-        }
-        if (Prefices.isRep(prefices)) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices, input);
-        }
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
-            input);
+    ops[0x76c] = (blockStart, eip, prefices, input) -> {
+      if (Prefices.isRepne(prefices)) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices, input);
       }
+      if (Prefices.isRep(prefices)) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices, input);
+      }
+      return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+          input);
     };
-    ops[0x76d] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        if (Prefices.isRepne(prefices)) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices, input);
-        }
-        if (Prefices.isRep(prefices)) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices, input);
-        }
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
-            input);
+    ops[0x76d] = (blockStart, eip, prefices, input) -> {
+      if (Prefices.isRepne(prefices)) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices, input);
       }
+      if (Prefices.isRep(prefices)) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices, input);
+      }
+      return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+          input);
     };
     ops[0x76e] = ops[0x16e];
 
@@ -39837,55 +39703,53 @@ public class ExecutableTables {
 
     ops[0x772] = ops[0x172];
 
-    ops[0x773] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        int modrm = input.peek() & 0xFF;
-        int reg = (modrm >> 3) & 7;
-        if (modrm < 0xC0) {
-          switch (reg) {
-            case 0x00:
-            case 0x01:
-              input.read8();
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
-                  input);
-            case 0x02:
-            case 0x03:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
-                  prefices, input);
-            case 0x04:
-            case 0x05:
-              input.read8();
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
-                  input);
-            case 0x06:
-            case 0x07:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
-                  prefices, input);
-          }
-        } else {
-          switch (reg) {
-            case 0x00:
-            case 0x01:
-              input.read8();
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
-                  input);
-            case 0x02:
-            case 0x03:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
-                  prefices, input);
-            case 0x04:
-            case 0x05:
-              input.read8();
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
-                  input);
-            case 0x06:
-            case 0x07:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
-                  prefices, input);
-          }
+    ops[0x773] = (blockStart, eip, prefices, input) -> {
+      int modrm = input.peek() & 0xFF;
+      int reg = (modrm >> 3) & 7;
+      if (modrm < 0xC0) {
+        switch (reg) {
+          case 0x00:
+          case 0x01:
+            input.read8();
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
+                input);
+          case 0x02:
+          case 0x03:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
+                prefices, input);
+          case 0x04:
+          case 0x05:
+            input.read8();
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
+                input);
+          case 0x06:
+          case 0x07:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
+                prefices, input);
         }
-        return null;
+      } else {
+        switch (reg) {
+          case 0x00:
+          case 0x01:
+            input.read8();
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
+                input);
+          case 0x02:
+          case 0x03:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
+                prefices, input);
+          case 0x04:
+          case 0x05:
+            input.read8();
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
+                input);
+          case 0x06:
+          case 0x07:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
+                prefices, input);
+        }
       }
+      return null;
     };
     ops[0x774] = ops[0x174];
 
@@ -39903,108 +39767,40 @@ public class ExecutableTables {
 
     ops[0x77b] = ops[0x17b];
 
-    ops[0x77c] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        if (Prefices.isRep(prefices)) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices, input);
-        }
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
-            input);
+    ops[0x77c] = (blockStart, eip, prefices, input) -> {
+      if (Prefices.isRep(prefices)) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices, input);
       }
+      return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+          input);
     };
-    ops[0x77d] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        if (Prefices.isRep(prefices)) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices, input);
-        }
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
-            input);
+    ops[0x77d] = (blockStart, eip, prefices, input) -> {
+      if (Prefices.isRep(prefices)) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices, input);
       }
+      return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+          input);
     };
     ops[0x77e] = ops[0x17e];
 
     ops[0x77f] = ops[0x17f];
 
-    ops[0x780] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.jo_Jd(blockStart, eip, prefices, input);
-      }
-    };
-    ops[0x781] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.jno_Jd(blockStart, eip, prefices, input);
-      }
-    };
-    ops[0x782] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.jb_Jd(blockStart, eip, prefices, input);
-      }
-    };
-    ops[0x783] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.jae_Jd(blockStart, eip, prefices, input);
-      }
-    };
-    ops[0x784] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.je_Jd(blockStart, eip, prefices, input);
-      }
-    };
-    ops[0x785] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.jne_Jd(blockStart, eip, prefices, input);
-      }
-    };
-    ops[0x786] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.jbe_Jd(blockStart, eip, prefices, input);
-      }
-    };
-    ops[0x787] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.ja_Jd(blockStart, eip, prefices, input);
-      }
-    };
-    ops[0x788] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.js_Jd(blockStart, eip, prefices, input);
-      }
-    };
-    ops[0x789] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.jns_Jd(blockStart, eip, prefices, input);
-      }
-    };
-    ops[0x78a] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.jp_Jd(blockStart, eip, prefices, input);
-      }
-    };
-    ops[0x78b] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.jnp_Jd(blockStart, eip, prefices, input);
-      }
-    };
-    ops[0x78c] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.jl_Jd(blockStart, eip, prefices, input);
-      }
-    };
-    ops[0x78d] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.jge_Jd(blockStart, eip, prefices, input);
-      }
-    };
-    ops[0x78e] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.jle_Jd(blockStart, eip, prefices, input);
-      }
-    };
-    ops[0x78f] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.jg_Jd(blockStart, eip, prefices, input);
-      }
-    };
+    ops[0x780] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.jo_Jd(blockStart, eip, prefices, input);
+    ops[0x781] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.jno_Jd(blockStart, eip, prefices, input);
+    ops[0x782] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.jb_Jd(blockStart, eip, prefices, input);
+    ops[0x783] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.jae_Jd(blockStart, eip, prefices, input);
+    ops[0x784] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.je_Jd(blockStart, eip, prefices, input);
+    ops[0x785] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.jne_Jd(blockStart, eip, prefices, input);
+    ops[0x786] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.jbe_Jd(blockStart, eip, prefices, input);
+    ops[0x787] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.ja_Jd(blockStart, eip, prefices, input);
+    ops[0x788] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.js_Jd(blockStart, eip, prefices, input);
+    ops[0x789] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.jns_Jd(blockStart, eip, prefices, input);
+    ops[0x78a] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.jp_Jd(blockStart, eip, prefices, input);
+    ops[0x78b] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.jnp_Jd(blockStart, eip, prefices, input);
+    ops[0x78c] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.jl_Jd(blockStart, eip, prefices, input);
+    ops[0x78d] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.jge_Jd(blockStart, eip, prefices, input);
+    ops[0x78e] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.jle_Jd(blockStart, eip, prefices, input);
+    ops[0x78f] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.jg_Jd(blockStart, eip, prefices, input);
     ops[0x790] = ops[0x190];
 
     ops[0x791] = ops[0x191];
@@ -40037,336 +39833,284 @@ public class ExecutableTables {
 
     ops[0x79f] = ops[0x19f];
 
-    ops[0x7a0] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
-            input);
-      }
-    };
-    ops[0x7a1] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
-            input);
-      }
-    };
+    ops[0x7a0] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+        input);
+    ops[0x7a1] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+        input);
     ops[0x7a2] = ops[0x1a2];
 
-    ops[0x7a3] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        if (Modrm.isMem(input.peek())) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.bt_Ed_Gd_mem(blockStart, eip, prefices, input);
-        } else {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.bt_Ed_Gd(blockStart, eip, prefices, input);
-        }
+    ops[0x7a3] = (blockStart, eip, prefices, input) -> {
+      if (Modrm.isMem(input.peek())) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.bt_Ed_Gd_mem(blockStart, eip, prefices, input);
+      } else {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.bt_Ed_Gd(blockStart, eip, prefices, input);
       }
     };
-    ops[0x7a4] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        if (Modrm.isMem(input.peek())) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shld_Ed_Gd_Ib_mem(blockStart, eip, prefices,
-              input);
-        } else {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shld_Ed_Gd_Ib(blockStart, eip, prefices, input);
-        }
+    ops[0x7a4] = (blockStart, eip, prefices, input) -> {
+      if (Modrm.isMem(input.peek())) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shld_Ed_Gd_Ib_mem(blockStart, eip, prefices,
+            input);
+      } else {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shld_Ed_Gd_Ib(blockStart, eip, prefices, input);
       }
     };
-    ops[0x7a5] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        if (Modrm.isMem(input.peek())) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shld_Ed_Gd_CL_mem(blockStart, eip, prefices,
-              input);
-        } else {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shld_Ed_Gd_CL(blockStart, eip, prefices, input);
-        }
+    ops[0x7a5] = (blockStart, eip, prefices, input) -> {
+      if (Modrm.isMem(input.peek())) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shld_Ed_Gd_CL_mem(blockStart, eip, prefices,
+            input);
+      } else {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shld_Ed_Gd_CL(blockStart, eip, prefices, input);
       }
     };
     ops[0x7a6] = ops[0x1a6];
 
     ops[0x7a7] = ops[0x1a7];
 
-    ops[0x7a8] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
-            input);
-      }
-    };
-    ops[0x7a9] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
-            input);
-      }
-    };
+    ops[0x7a8] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+        input);
+    ops[0x7a9] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+        input);
     ops[0x7aa] = ops[0x1aa];
 
-    ops[0x7ab] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        if (Modrm.isMem(input.peek())) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.bts_Ed_Gd_mem(blockStart, eip, prefices, input);
-        } else {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.bts_Ed_Gd(blockStart, eip, prefices, input);
-        }
+    ops[0x7ab] = (blockStart, eip, prefices, input) -> {
+      if (Modrm.isMem(input.peek())) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.bts_Ed_Gd_mem(blockStart, eip, prefices, input);
+      } else {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.bts_Ed_Gd(blockStart, eip, prefices, input);
       }
     };
-    ops[0x7ac] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        if (Modrm.isMem(input.peek())) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shrd_Ed_Gd_Ib_mem(blockStart, eip, prefices,
-              input);
-        } else {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shrd_Ed_Gd_Ib(blockStart, eip, prefices, input);
-        }
+    ops[0x7ac] = (blockStart, eip, prefices, input) -> {
+      if (Modrm.isMem(input.peek())) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shrd_Ed_Gd_Ib_mem(blockStart, eip, prefices,
+            input);
+      } else {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shrd_Ed_Gd_Ib(blockStart, eip, prefices, input);
       }
     };
-    ops[0x7ad] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        if (Modrm.isMem(input.peek())) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shrd_Ed_Gd_CL_mem(blockStart, eip, prefices,
-              input);
-        } else {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shrd_Ed_Gd_CL(blockStart, eip, prefices, input);
-        }
+    ops[0x7ad] = (blockStart, eip, prefices, input) -> {
+      if (Modrm.isMem(input.peek())) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shrd_Ed_Gd_CL_mem(blockStart, eip, prefices,
+            input);
+      } else {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.shrd_Ed_Gd_CL(blockStart, eip, prefices, input);
       }
     };
     ops[0x7ae] = ops[0x1ae];
 
-    ops[0x7af] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        if (Modrm.isMem(input.peek())) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.imul_Gd_Ed_mem(blockStart, eip, prefices,
-              input);
-        } else {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.imul_Gd_Ed(blockStart, eip, prefices, input);
-        }
+    ops[0x7af] = (blockStart, eip, prefices, input) -> {
+      if (Modrm.isMem(input.peek())) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.imul_Gd_Ed_mem(blockStart, eip, prefices,
+            input);
+      } else {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.imul_Gd_Ed(blockStart, eip, prefices, input);
       }
     };
     ops[0x7b0] = ops[0x1b0];
 
     ops[0x7b1] = ops[0x1b1];
 
-    ops[0x7b2] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        int modrm = input.peek() & 0xFF;
-        int reg = (modrm >> 3) & 7;
-        if (modrm < 0xC0) {
-          switch (reg) {
-            case 0x00:
-            case 0x01:
-            case 0x02:
-            case 0x03:
-            case 0x04:
-            case 0x05:
-            case 0x06:
-            case 0x07:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.lss_o32_Gd_M_mem(blockStart, eip, prefices,
-                  input);
-          }
-        } else {
-          switch (reg) {
-            case 0x00:
-            case 0x01:
-            case 0x02:
-            case 0x03:
-            case 0x04:
-            case 0x05:
-            case 0x06:
-            case 0x07:
-              input.read8();
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode/*(Disassembler.java line 189)*/(
-                  blockStart, eip, prefices, input);
-          }
+    ops[0x7b2] = (blockStart, eip, prefices, input) -> {
+      int modrm = input.peek() & 0xFF;
+      int reg = (modrm >> 3) & 7;
+      if (modrm < 0xC0) {
+        switch (reg) {
+          case 0x00:
+          case 0x01:
+          case 0x02:
+          case 0x03:
+          case 0x04:
+          case 0x05:
+          case 0x06:
+          case 0x07:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.lss_o32_Gd_M_mem(blockStart, eip, prefices,
+                input);
         }
-        return null;
-      }
-    };
-    ops[0x7b3] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        if (Modrm.isMem(input.peek())) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.btr_Ed_Gd_mem(blockStart, eip, prefices, input);
-        } else {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.btr_Ed_Gd(blockStart, eip, prefices, input);
+      } else {
+        switch (reg) {
+          case 0x00:
+          case 0x01:
+          case 0x02:
+          case 0x03:
+          case 0x04:
+          case 0x05:
+          case 0x06:
+          case 0x07:
+            input.read8();
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode/*(Disassembler.java line 189)*/(
+                blockStart, eip, prefices, input);
         }
       }
+      return null;
     };
-    ops[0x7b4] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        int modrm = input.peek() & 0xFF;
-        int reg = (modrm >> 3) & 7;
-        if (modrm < 0xC0) {
-          switch (reg) {
-            case 0x00:
-            case 0x01:
-            case 0x02:
-            case 0x03:
-            case 0x04:
-            case 0x05:
-            case 0x06:
-            case 0x07:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.lfs_o32_Gd_M_mem(blockStart, eip, prefices,
-                  input);
-          }
-        } else {
-          switch (reg) {
-            case 0x00:
-            case 0x01:
-            case 0x02:
-            case 0x03:
-            case 0x04:
-            case 0x05:
-            case 0x06:
-            case 0x07:
-              input.read8();
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode/*(Disassembler.java line 189)*/(
-                  blockStart, eip, prefices, input);
-          }
-        }
-        return null;
+    ops[0x7b3] = (blockStart, eip, prefices, input) -> {
+      if (Modrm.isMem(input.peek())) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.btr_Ed_Gd_mem(blockStart, eip, prefices, input);
+      } else {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.btr_Ed_Gd(blockStart, eip, prefices, input);
       }
     };
-    ops[0x7b5] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        int modrm = input.peek() & 0xFF;
-        int reg = (modrm >> 3) & 7;
-        if (modrm < 0xC0) {
-          switch (reg) {
-            case 0x00:
-            case 0x01:
-            case 0x02:
-            case 0x03:
-            case 0x04:
-            case 0x05:
-            case 0x06:
-            case 0x07:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.lgs_o32_Gd_M_mem(blockStart, eip, prefices,
-                  input);
-          }
-        } else {
-          switch (reg) {
-            case 0x00:
-            case 0x01:
-            case 0x02:
-            case 0x03:
-            case 0x04:
-            case 0x05:
-            case 0x06:
-            case 0x07:
-              input.read8();
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode/*(Disassembler.java line 189)*/(
-                  blockStart, eip, prefices, input);
-          }
+    ops[0x7b4] = (blockStart, eip, prefices, input) -> {
+      int modrm = input.peek() & 0xFF;
+      int reg = (modrm >> 3) & 7;
+      if (modrm < 0xC0) {
+        switch (reg) {
+          case 0x00:
+          case 0x01:
+          case 0x02:
+          case 0x03:
+          case 0x04:
+          case 0x05:
+          case 0x06:
+          case 0x07:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.lfs_o32_Gd_M_mem(blockStart, eip, prefices,
+                input);
         }
-        return null;
-      }
-    };
-    ops[0x7b6] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        if (Modrm.isMem(input.peek())) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.movzx_Gd_Eb_mem(blockStart, eip, prefices,
-              input);
-        } else {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.movzx_Gd_Eb(blockStart, eip, prefices, input);
+      } else {
+        switch (reg) {
+          case 0x00:
+          case 0x01:
+          case 0x02:
+          case 0x03:
+          case 0x04:
+          case 0x05:
+          case 0x06:
+          case 0x07:
+            input.read8();
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode/*(Disassembler.java line 189)*/(
+                blockStart, eip, prefices, input);
         }
       }
+      return null;
     };
-    ops[0x7b7] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        if (Modrm.isMem(input.peek())) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.movzx_Gd_Ew_mem(blockStart, eip, prefices,
-              input);
-        } else {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.movzx_Gd_Ew(blockStart, eip, prefices, input);
+    ops[0x7b5] = (blockStart, eip, prefices, input) -> {
+      int modrm = input.peek() & 0xFF;
+      int reg = (modrm >> 3) & 7;
+      if (modrm < 0xC0) {
+        switch (reg) {
+          case 0x00:
+          case 0x01:
+          case 0x02:
+          case 0x03:
+          case 0x04:
+          case 0x05:
+          case 0x06:
+          case 0x07:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.lgs_o32_Gd_M_mem(blockStart, eip, prefices,
+                input);
         }
+      } else {
+        switch (reg) {
+          case 0x00:
+          case 0x01:
+          case 0x02:
+          case 0x03:
+          case 0x04:
+          case 0x05:
+          case 0x06:
+          case 0x07:
+            input.read8();
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode/*(Disassembler.java line 189)*/(
+                blockStart, eip, prefices, input);
+        }
+      }
+      return null;
+    };
+    ops[0x7b6] = (blockStart, eip, prefices, input) -> {
+      if (Modrm.isMem(input.peek())) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.movzx_Gd_Eb_mem(blockStart, eip, prefices,
+            input);
+      } else {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.movzx_Gd_Eb(blockStart, eip, prefices, input);
+      }
+    };
+    ops[0x7b7] = (blockStart, eip, prefices, input) -> {
+      if (Modrm.isMem(input.peek())) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.movzx_Gd_Ew_mem(blockStart, eip, prefices,
+            input);
+      } else {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.movzx_Gd_Ew(blockStart, eip, prefices, input);
       }
     };
     ops[0x7b8] = ops[0x1b8];
 
     ops[0x7b9] = ops[0x1b9];
 
-    ops[0x7ba] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        int modrm = input.peek() & 0xFF;
-        int reg = (modrm >> 3) & 7;
-        if (modrm < 0xC0) {
-          switch (reg) {
-            case 0x00:
-            case 0x01:
-            case 0x02:
-            case 0x03:
-              input.read8();
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
-                  input);
-            case 0x04:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.bt_Ed_Ib_mem(blockStart, eip, prefices,
-                  input);
-            case 0x05:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.bts_Ed_Ib_mem(blockStart, eip, prefices,
-                  input);
-            case 0x06:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.btr_Ed_Ib_mem(blockStart, eip, prefices,
-                  input);
-            case 0x07:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.btc_Ed_Ib_mem(blockStart, eip, prefices,
-                  input);
-          }
-        } else {
-          switch (reg) {
-            case 0x00:
-            case 0x01:
-            case 0x02:
-            case 0x03:
-              input.read8();
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
-                  input);
-            case 0x04:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.bt_Ed_Ib(blockStart, eip, prefices, input);
-            case 0x05:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.bts_Ed_Ib(blockStart, eip, prefices, input);
-            case 0x06:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.btr_Ed_Ib(blockStart, eip, prefices, input);
-            case 0x07:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.btc_Ed_Ib(blockStart, eip, prefices, input);
-          }
+    ops[0x7ba] = (blockStart, eip, prefices, input) -> {
+      int modrm = input.peek() & 0xFF;
+      int reg = (modrm >> 3) & 7;
+      if (modrm < 0xC0) {
+        switch (reg) {
+          case 0x00:
+          case 0x01:
+          case 0x02:
+          case 0x03:
+            input.read8();
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
+                input);
+          case 0x04:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.bt_Ed_Ib_mem(blockStart, eip, prefices,
+                input);
+          case 0x05:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.bts_Ed_Ib_mem(blockStart, eip, prefices,
+                input);
+          case 0x06:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.btr_Ed_Ib_mem(blockStart, eip, prefices,
+                input);
+          case 0x07:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.btc_Ed_Ib_mem(blockStart, eip, prefices,
+                input);
         }
-        return null;
-      }
-    };
-    ops[0x7bb] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        if (Modrm.isMem(input.peek())) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.btc_Ed_Gd_mem(blockStart, eip, prefices, input);
-        } else {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.btc_Ed_Gd(blockStart, eip, prefices, input);
+      } else {
+        switch (reg) {
+          case 0x00:
+          case 0x01:
+          case 0x02:
+          case 0x03:
+            input.read8();
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
+                input);
+          case 0x04:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.bt_Ed_Ib(blockStart, eip, prefices, input);
+          case 0x05:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.bts_Ed_Ib(blockStart, eip, prefices, input);
+          case 0x06:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.btr_Ed_Ib(blockStart, eip, prefices, input);
+          case 0x07:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.btc_Ed_Ib(blockStart, eip, prefices, input);
         }
       }
+      return null;
     };
-    ops[0x7bc] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        if (Modrm.isMem(input.peek())) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.bsf_Gd_Ed_mem(blockStart, eip, prefices, input);
-        } else {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.bsf_Gd_Ed(blockStart, eip, prefices, input);
-        }
+    ops[0x7bb] = (blockStart, eip, prefices, input) -> {
+      if (Modrm.isMem(input.peek())) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.btc_Ed_Gd_mem(blockStart, eip, prefices, input);
+      } else {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.btc_Ed_Gd(blockStart, eip, prefices, input);
+      }
+    };
+    ops[0x7bc] = (blockStart, eip, prefices, input) -> {
+      if (Modrm.isMem(input.peek())) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.bsf_Gd_Ed_mem(blockStart, eip, prefices, input);
+      } else {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.bsf_Gd_Ed(blockStart, eip, prefices, input);
       }
     };
     ops[0x7bd] = ops[0x1bd];
 
-    ops[0x7be] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        if (Modrm.isMem(input.peek())) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.movsx_Gd_Eb_mem(blockStart, eip, prefices,
-              input);
-        } else {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.movsx_Gd_Eb(blockStart, eip, prefices, input);
-        }
+    ops[0x7be] = (blockStart, eip, prefices, input) -> {
+      if (Modrm.isMem(input.peek())) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.movsx_Gd_Eb_mem(blockStart, eip, prefices,
+            input);
+      } else {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.movsx_Gd_Eb(blockStart, eip, prefices, input);
       }
     };
-    ops[0x7bf] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        if (Modrm.isMem(input.peek())) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.movsx_Gd_Ew_mem(blockStart, eip, prefices,
-              input);
-        } else {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.movsx_Gd_Ew(blockStart, eip, prefices, input);
-        }
+    ops[0x7bf] = (blockStart, eip, prefices, input) -> {
+      if (Modrm.isMem(input.peek())) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.movsx_Gd_Ew_mem(blockStart, eip, prefices,
+            input);
+      } else {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.movsx_Gd_Ew(blockStart, eip, prefices, input);
       }
     };
     ops[0x7c0] = ops[0x1c0];
@@ -40379,108 +40123,68 @@ public class ExecutableTables {
 
     ops[0x7c4] = ops[0x1c4];
 
-    ops[0x7c5] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
-            input);
-      }
-    };
+    ops[0x7c5] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+        input);
     ops[0x7c6] = ops[0x1c6];
 
-    ops[0x7c7] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        int modrm = input.peek() & 0xFF;
-        int reg = (modrm >> 3) & 7;
-        if (modrm < 0xC0) {
-          switch (reg) {
-            case 0x00:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
-                  prefices, input);
-            case 0x01:
-            case 0x02:
-            case 0x03:
-            case 0x04:
-            case 0x05:
-            case 0x06:
-            case 0x07:
-              input.read8();
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
-                  input);
-          }
-        } else {
-          switch (reg) {
-            case 0x00:
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
-                  prefices, input);
-            case 0x01:
-            case 0x02:
-            case 0x03:
-            case 0x04:
-            case 0x05:
-            case 0x06:
-            case 0x07:
-              input.read8();
-              return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
-                  input);
-          }
+    ops[0x7c7] = (blockStart, eip, prefices, input) -> {
+      int modrm = input.peek() & 0xFF;
+      int reg = (modrm >> 3) & 7;
+      if (modrm < 0xC0) {
+        switch (reg) {
+          case 0x00:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
+                prefices, input);
+          case 0x01:
+          case 0x02:
+          case 0x03:
+          case 0x04:
+          case 0x05:
+          case 0x06:
+          case 0x07:
+            input.read8();
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
+                input);
         }
-        return null;
-      }
-    };
-    ops[0x7c8] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.bswap_o32_rAXr8(blockStart, eip, prefices, input);
-      }
-    };
-    ops[0x7c9] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.bswap_o32_rCXr9(blockStart, eip, prefices, input);
-      }
-    };
-    ops[0x7ca] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.bswap_o32_rDXr10(blockStart, eip, prefices,
-            input);
-      }
-    };
-    ops[0x7cb] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.bswap_o32_rBXr11(blockStart, eip, prefices,
-            input);
-      }
-    };
-    ops[0x7cc] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.bswap_o32_rSPr12(blockStart, eip, prefices,
-            input);
-      }
-    };
-    ops[0x7cd] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.bswap_o32_rBPr13(blockStart, eip, prefices,
-            input);
-      }
-    };
-    ops[0x7ce] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.bswap_o32_rSIr14(blockStart, eip, prefices,
-            input);
-      }
-    };
-    ops[0x7cf] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.bswap_o32_rDIr15(blockStart, eip, prefices,
-            input);
-      }
-    };
-    ops[0x7d0] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        if (Prefices.isRep(prefices)) {
-          return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices, input);
+      } else {
+        switch (reg) {
+          case 0x00:
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip,
+                prefices, input);
+          case 0x01:
+          case 0x02:
+          case 0x03:
+          case 0x04:
+          case 0x05:
+          case 0x06:
+          case 0x07:
+            input.read8();
+            return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices,
+                input);
         }
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
-            input);
       }
+      return null;
+    };
+    ops[0x7c8] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.bswap_o32_rAXr8(blockStart, eip, prefices, input);
+    ops[0x7c9] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.bswap_o32_rCXr9(blockStart, eip, prefices, input);
+    ops[0x7ca] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.bswap_o32_rDXr10(blockStart, eip, prefices,
+        input);
+    ops[0x7cb] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.bswap_o32_rBXr11(blockStart, eip, prefices,
+        input);
+    ops[0x7cc] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.bswap_o32_rSPr12(blockStart, eip, prefices,
+        input);
+    ops[0x7cd] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.bswap_o32_rBPr13(blockStart, eip, prefices,
+        input);
+    ops[0x7ce] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.bswap_o32_rSIr14(blockStart, eip, prefices,
+        input);
+    ops[0x7cf] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.bswap_o32_rDIr15(blockStart, eip, prefices,
+        input);
+    ops[0x7d0] = (blockStart, eip, prefices, input) -> {
+      if (Prefices.isRep(prefices)) {
+        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.InvalidOpcode(blockStart, eip, prefices, input);
+      }
+      return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+          input);
     };
     ops[0x7d1] = ops[0x1d1];
 
@@ -40492,18 +40196,10 @@ public class ExecutableTables {
 
     ops[0x7d5] = ops[0x1d5];
 
-    ops[0x7d6] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
-            input);
-      }
-    };
-    ops[0x7d7] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
-            input);
-      }
-    };
+    ops[0x7d6] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+        input);
+    ops[0x7d7] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+        input);
     ops[0x7d8] = ops[0x1d8];
 
     ops[0x7d9] = ops[0x1d9];
@@ -40532,12 +40228,8 @@ public class ExecutableTables {
 
     ops[0x7e5] = ops[0x1e5];
 
-    ops[0x7e6] = new OpcodeDecoder() {
-      public Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream input) {
-        return new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
-            input);
-      }
-    };
+    ops[0x7e6] = (blockStart, eip, prefices, input) -> new com.github.smeny.jpc.emulator.execution.opcodes.vm.UnimplementedOpcode(blockStart, eip, prefices,
+        input);
     ops[0x7e7] = ops[0x1e7];
 
     ops[0x7e8] = ops[0x1e8];

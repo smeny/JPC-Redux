@@ -33,25 +33,43 @@
 
 package com.github.smeny.jpc.debugger;
 
-import java.util.*;
-import java.util.zip.*;
-import java.io.*;
-import java.text.DecimalFormat;
-import java.awt.Color;
-import java.awt.event.*;
-
-import javax.swing.*;
-
-import com.github.smeny.jpc.debugger.util.*;
+import com.github.smeny.jpc.debugger.util.ApplicationFrame;
+import com.github.smeny.jpc.debugger.util.ObjectDatabase;
 import com.github.smeny.jpc.emulator.PC;
+import com.github.smeny.jpc.emulator.memory.LinearAddressSpace;
+import com.github.smeny.jpc.emulator.memory.PhysicalAddressSpace;
+import com.github.smeny.jpc.emulator.pci.peripheral.VGACard;
+import com.github.smeny.jpc.emulator.peripheral.Keyboard;
+import com.github.smeny.jpc.emulator.processor.Processor;
 import com.github.smeny.jpc.emulator.processor.fpu64.FpuState64;
 import com.github.smeny.jpc.j2se.Option;
-import com.github.smeny.jpc.support.*;
-import com.github.smeny.jpc.emulator.memory.*;
-import com.github.smeny.jpc.emulator.processor.Processor;
-import com.github.smeny.jpc.emulator.peripheral.Keyboard;
-import com.github.smeny.jpc.emulator.pci.peripheral.VGACard;
 import com.github.smeny.jpc.j2se.VirtualClock;
+import com.github.smeny.jpc.support.ArgProcessor;
+import com.github.smeny.jpc.support.DriveSet;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Vector;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 public class JPC extends ApplicationFrame implements ActionListener {
 
@@ -709,7 +727,7 @@ public class JPC extends ApplicationFrame implements ActionListener {
 
     public PC createPC(String[] args) throws IOException
     {
-        PC pc = new PC(new VirtualClock(), args);
+        PC pc = new PC.PCBuilder(new VirtualClock()).withDrivesFromArgs(args).build();
         loadNewPC(pc);
 
         String snapShot = ArgProcessor.findVariable(args, "ss", null);

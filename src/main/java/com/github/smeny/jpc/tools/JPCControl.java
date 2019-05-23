@@ -135,11 +135,11 @@ public class JPCControl extends EmulatorControl
     public String executeInstruction() throws IOException
     {
         try {
-            ints.invoke(pc, new Integer(1), new Boolean(false));
+            ints.invoke(pc, 1, Boolean.FALSE);
             int blockLength = (Integer)execute.invoke(pc);
             if (blockLength > 1)
-                ints.invoke(pc, new Integer(blockLength - 1), new Boolean(false));
-            return (String) instructionInfo.invoke(pc, new Integer(blockLength));
+                ints.invoke(pc, blockLength - 1, Boolean.FALSE);
+            return (String) instructionInfo.invoke(pc, blockLength);
         } catch (InvocationTargetException e)
         {
             Throwable c = e.getCause();
@@ -165,7 +165,7 @@ public class JPCControl extends EmulatorControl
     public void setPhysicalMemory(int addr, byte[] data) throws IOException
     {
         try {
-            setPhysicalMemory.invoke(pc, new Integer(addr), data);
+            setPhysicalMemory.invoke(pc, addr, data);
         } catch (InvocationTargetException e) {throw new RuntimeException(e.getMessage());}
         catch (IllegalAccessException e) {throw new RuntimeException(e.getMessage());}
     }
@@ -192,7 +192,7 @@ public class JPCControl extends EmulatorControl
     public Integer getPhysicalPage(Integer page, byte[] data) throws IOException
     {
         try {
-            return (Integer) getPage.invoke(pc, page, data, new Boolean(false));
+            return (Integer) getPage.invoke(pc, page, data, Boolean.FALSE);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (InvocationTargetException e) {
@@ -204,7 +204,7 @@ public class JPCControl extends EmulatorControl
     public Integer getLinearPage(Integer page, byte[] data) throws IOException
     {
         try {
-            return (Integer) getPage.invoke(pc, page, data, new Boolean(true));
+            return (Integer) getPage.invoke(pc, page, data, Boolean.TRUE);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (InvocationTargetException e) {

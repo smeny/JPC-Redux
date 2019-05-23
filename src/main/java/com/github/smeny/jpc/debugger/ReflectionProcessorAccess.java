@@ -28,6 +28,7 @@
 package com.github.smeny.jpc.debugger;
 
 import com.github.smeny.jpc.emulator.processor.Processor;
+import com.github.smeny.jpc.emulator.processor.Segment;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;

@@ -27,6 +27,7 @@ package com.github.smeny.jpc.emulator.execution.decoder;
 
 import com.github.smeny.jpc.emulator.execution.Executable;
 import com.github.smeny.jpc.emulator.execution.ExecutableParameters;
+import com.github.smeny.jpc.emulator.execution.OperatingMode;
 import com.github.smeny.jpc.j2se.Option;
 
 import java.io.BufferedReader;
@@ -44,6 +45,9 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import static com.github.smeny.jpc.emulator.execution.OperatingMode.PROTECTED_MODE;
+import static com.github.smeny.jpc.emulator.execution.OperatingMode.REAL_MODE;
+import static com.github.smeny.jpc.emulator.execution.OperatingMode.VIRTUAL_8086_MODE;
 import static com.github.smeny.jpc.emulator.execution.decoder.Table.*;
 import static com.github.smeny.jpc.emulator.execution.decoder.ZygoteOperand.*;
 
@@ -61,15 +65,15 @@ public class Disassembler {
   private static Map<String, Constructor<? extends Executable>> vm_instructions = new HashMap<>();
 
   static {
-    loadOpcodes(vm_instructions, "vm");
-    loadOpcodes(rm_instructions, "rm");
-    loadOpcodes(pm_instructions, "pm");
+    loadOpcodes(vm_instructions, VIRTUAL_8086_MODE);
+    loadOpcodes(rm_instructions, REAL_MODE);
+    loadOpcodes(pm_instructions, PROTECTED_MODE);
   }
 
-  private static void loadOpcodes(Map<String, Constructor<? extends Executable>> instructions, String mode) {
+  private static void loadOpcodes(Map<String, Constructor<? extends Executable>> instructions, OperatingMode mode) {
     // load instruction classes
     ClassLoader cl = Disassembler.class.getClassLoader();
-    String path = "org/jpc/emulator/execution/opcodes/" + mode;
+    String path = "org/jpc/emulator/execution/opcodes/" + mode.getValue();
     
     // Dynamically iterate over the opcodes package
     try {
@@ -117,18 +121,18 @@ public class Disassembler {
     }
   }
 
-  public static Executable getExecutable(int mode, int blockStart, Instruction in) {
+  public static Executable getExecutable(OperatingMode mode, int blockStart, Instruction in) {
     try {
       String gen = in.getGeneralClassName(false, false);
       Map<String, Constructor<? extends Executable>> instructions = null;
       switch (mode) {
-        case 1:
+        case REAL_MODE:
           instructions = rm_instructions;
           break;
-        case 2:
+        case PROTECTED_MODE:
           instructions = pm_instructions;
           break;
-        case 3:
+        case VIRTUAL_8086_MODE:
           instructions = vm_instructions;
           break;
         default:
@@ -153,20 +157,19 @@ public class Disassembler {
         }
         Executable dis = c.newInstance(blockStart, in);
         if (in.pfx.lock != 0) {
-          ExecutableParameters executableParameters = new ExecutableParameters.Builder().
-          return new Lock(blockStart, dis, in);
+          ExecutableParameters executableParameters = new ExecutableParameters.Builder(blockStart, in)
+                  .operatingMode(mode)
+                  .parentExecutable(dis)
+                  .build();
+          return new Lock(executableParameters);
         }
         return dis;
       }
-    } catch (InstantiationException e) {
-      e.printStackTrace();
-    } catch (IllegalAccessException e) {
-      e.printStackTrace();
-    } catch (InvocationTargetException e) {
+    } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
       e.printStackTrace();
     }
     throw new IllegalStateException(
-        "Unimplemented opcode: " + ((mode == 2) ? "PM:" : (mode == 1) ? "RM:" : "VM:") + in.toString() +
+        "Unimplemented opcode: " + mode.getValue() + in.toString() +
             ", general pattern: " + in.getGeneralClassName(true, true) + ".");
   }
 
@@ -216,16 +219,16 @@ public class Disassembler {
     return prefix + "UnimplementedOpcode";
   }
 
-  public static Executable getEipUpdate(int mode, int blockStart, Instruction prev) {
+  public static Executable getEipUpdate(OperatingMode mode, int blockStart, Instruction prev) {
     Map<String, Constructor<? extends Executable>> instructions = null;
     switch (mode) {
-      case 1:
+      case REAL_MODE:
         instructions = rm_instructions;
         break;
-      case 2:
+      case PROTECTED_MODE:
         instructions = pm_instructions;
         break;
-      case 3:
+      case VIRTUAL_8086_MODE:
         instructions = vm_instructions;
         break;
       default:
@@ -233,11 +236,7 @@ public class Disassembler {
     }
     try {
       return instructions.get("eip_update").newInstance(blockStart, prev);
-    } catch (InstantiationException e) {
-      e.printStackTrace();
-    } catch (IllegalAccessException e) {
-      e.printStackTrace();
-    } catch (InvocationTargetException e) {
+    } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
       e.printStackTrace();
     }
     return null;
@@ -298,7 +297,7 @@ public class Disassembler {
 
   private static long decodeCount = 0;
 
-  public static BasicBlock disassembleBlock(PeekableInputStream input, int operand_size, int mode) {
+  public static BasicBlock disassembleBlock(PeekableInputStream input, int operand_size, OperatingMode mode) {
     decodeCount++;
     if (decodeCount % 1000 == 0) {
       System.out.println("Decoded " + decodeCount + " blocks...");

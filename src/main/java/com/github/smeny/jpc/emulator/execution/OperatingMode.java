@@ -21,7 +21,18 @@
 package com.github.smeny.jpc.emulator.execution;
 
 public enum OperatingMode {
-  REAL_MODE,
-  PROTECTED_MODE,
-  VIRTUAL_8086_MODE
+  REAL_MODE("rm"),
+  PROTECTED_MODE("pm"),
+  VIRTUAL_8086_MODE("vm");
+
+  private final String value;
+
+  OperatingMode(String value) {
+    this.value = value;
+  }
+
+  public String getValue() {
+    return value;
+  }
+
 }

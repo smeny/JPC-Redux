@@ -31,7 +31,7 @@ import com.github.smeny.jpc.emulator.execution.decoder.Instruction;
 import com.github.smeny.jpc.emulator.processor.Processor;
 
 public abstract class Executable {
-  public static final int CF = 1 << 0;
+  public static final int CF = 1;
   public static final int PF = 1 << 2;
   public static final int AF = 1 << 4;
   public static final int ZF = 1 << 6;

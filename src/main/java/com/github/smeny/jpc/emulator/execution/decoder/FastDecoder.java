@@ -97,7 +97,7 @@ public class FastDecoder {
     boolean delayInterrupts = false;
     while (!current.isBranch()) {
       if (((delayInterrupts) || (count >= MAX_INSTRUCTIONS_PER_BLOCK)) && !delayInterrupts(current)) {
-        ExecutableParameters.Builder parametersBuilder = new ExecutableParameters.Builder(startAddr, (int) input.getAddress(), mode);
+        ExecutableParameters.Builder parametersBuilder = new ExecutableParameters.Builder(startAddr, (int) input.getAddress()).operatingMode(mode);
         parametersBuilder.input(input);
         Executable eip = new EipUpdate(parametersBuilder.build());
         current.next = eip;
@@ -192,17 +192,17 @@ public class FastDecoder {
   }
   
   
-  private static Executable innerDecodeOpcode(int blockStart, PeekableInputStream input) {
-    // FIXME: Casting long to int !!!
-    int opStart = (int) input.getAddress();
-    int prefices = 0x1C; // define constant
-    int currentReadByte = input.readU8(); // should be a byte really
-    
-    while (Prefices.isPrefix(currentReadByte)) {
-      
-    }
-    
-  }
+//  private static Executable innerDecodeOpcode(int blockStart, PeekableInputStream input) {
+//    // FIXME: Casting long to int !!!
+//    int opStart = (int) input.getAddress();
+//    int prefices = 0x1C; // define constant
+//    int currentReadByte = input.readU8(); // should be a byte really
+//
+//    while (Prefices.isPrefix(currentReadByte)) {
+//
+//    }
+//
+//  }
   
 
   private static Executable decodePMOpcode(int blockStart, PeekableInputStream input, boolean is32BitSeg) {

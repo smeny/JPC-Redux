@@ -27,41 +27,36 @@
 
 package com.github.smeny.jpc.emulator.execution.opcodes.vm;
 
-import com.github.smeny.jpc.emulator.execution.*;
-import com.github.smeny.jpc.emulator.execution.decoder.*;
-import com.github.smeny.jpc.emulator.processor.*;
-import com.github.smeny.jpc.emulator.processor.fpu64.*;
-import static com.github.smeny.jpc.emulator.processor.Processor.*;
+import com.github.smeny.jpc.emulator.execution.Executable;
+import com.github.smeny.jpc.emulator.execution.UCodes;
+import com.github.smeny.jpc.emulator.execution.decoder.Modrm;
+import com.github.smeny.jpc.emulator.execution.decoder.PeekableInputStream;
+import com.github.smeny.jpc.emulator.processor.Processor;
 
-public class adc_AL_Ib extends Executable
-{
+public class adc_AL_Ib extends Executable {
     final int immb;
 
-    public adc_AL_Ib(int blockStart, int eip, int prefices, PeekableInputStream input)
-    {
+    public adc_AL_Ib(int blockStart, int eip, PeekableInputStream input) {
         super(blockStart, eip);
         immb = Modrm.Ib(input);
     }
 
-    public Branch execute(Processor cpu)
-    {
+    public Branch execute(Processor cpu) {
         boolean incf = cpu.cf();
         cpu.flagOp1 = cpu.r_al.get8();
         cpu.flagOp2 = immb;
-        cpu.flagResult = (byte)(cpu.flagOp1 + cpu.flagOp2 + (incf ? 1 : 0));
-        cpu.r_al.set8((byte)cpu.flagResult);
+        cpu.flagResult = (byte) (cpu.flagOp1 + cpu.flagOp2 + (incf ? 1 : 0));
+        cpu.r_al.set8((byte) cpu.flagResult);
         cpu.flagIns = UCodes.ADC8;
         cpu.flagStatus = OSZAPC;
         return Branch.None;
     }
 
-    public boolean isBranch()
-    {
+    public boolean isBranch() {
         return false;
     }
 
-    public String toString()
-    {
+    public String toString() {
         return this.getClass().getName();
     }
 }

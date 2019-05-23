@@ -22,26 +22,22 @@ package com.github.smeny.jpc.emulator.execution.opcodes;
 import com.github.smeny.jpc.emulator.execution.Executable;
 import com.github.smeny.jpc.emulator.execution.ExecutableParameters;
 
-import java.util.EnumMap;
 import java.util.function.Function;
 
 public enum Opcode {
-  AAA,
-  AAD,
-  AAM,
-  AAS,
-  EIP_UPDATE;
+    AAA(AsciiAdjustAlAfterAddition::new),
+    AAD(AsciiAdjustAxBeforeDivision::new),
+    AAM(AsciiAdjustAxAfterMultiplication::new),
+    AAS(AsciiAdjustAlAfterSubtraction::new),
+    EIP_UPDATE(EipUpdate::new);
 
-  private static EnumMap<Opcode, Function<ExecutableParameters, ? extends Executable>> opcodeExecutions;
+    private Function<ExecutableParameters, ? extends Executable> operation;
 
-  static {
-    opcodeExecutions = new EnumMap<>(Opcode.class);
-    opcodeExecutions.put(AAA, AsciiAdjustAlAfterAddition::new);
-    opcodeExecutions.put(AAD, AsciiAdjustAxBeforeDivision::new);
-    opcodeExecutions.put(AAM, AsciiAdjustAxAfterMultiplication::new);
-    opcodeExecutions.put(AAS, AsciiAdjustAlAfterSubtraction::new);
-    opcodeExecutions.put(EIP_UPDATE, EipUpdate::new);
-  }
+    Opcode(Function<ExecutableParameters, ? extends Executable> operation) {
+        this.operation = operation;
+    }
 
-
+    public Executable getExecutable(ExecutableParameters executableParameters) {
+        return operation.apply(executableParameters);
+    }
 }

@@ -27,17 +27,17 @@
 
 package com.github.smeny.jpc.emulator.execution.opcodes.rm;
 
-import com.github.smeny.jpc.emulator.execution.*;
-import com.github.smeny.jpc.emulator.execution.decoder.*;
-import com.github.smeny.jpc.emulator.processor.*;
-import com.github.smeny.jpc.emulator.processor.fpu64.*;
-import static com.github.smeny.jpc.emulator.processor.Processor.*;
+import com.github.smeny.jpc.emulator.execution.Executable;
+import com.github.smeny.jpc.emulator.execution.UCodes;
+import com.github.smeny.jpc.emulator.execution.decoder.Modrm;
+import com.github.smeny.jpc.emulator.execution.decoder.PeekableInputStream;
+import com.github.smeny.jpc.emulator.processor.Processor;
 
 public class adc_AL_Ib extends Executable
 {
     final int immb;
 
-    public adc_AL_Ib(int blockStart, int eip, int prefices, PeekableInputStream input)
+    public adc_AL_Ib(int blockStart, int eip, PeekableInputStream input)
     {
         super(blockStart, eip);
         immb = Modrm.Ib(input);

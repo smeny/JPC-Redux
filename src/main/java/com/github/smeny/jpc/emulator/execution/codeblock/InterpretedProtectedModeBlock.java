@@ -69,16 +69,16 @@ public class InterpretedProtectedModeBlock implements ProtectedModeCodeBlock {
       b.postInstruction(cpu, current);
       return ret;
     } catch (ProcessorException e) {
-      cpu.eip += current.delta;
+      cpu.eip += current.getDelta();
       if (current.isBranch()) // branches have already updated eip
       {
         cpu.eip -= getX86Length(); // so eip points at the branch that barfed
       }
       if (!e.pointsToSelf()) {
         if (current.isBranch()) {
-          cpu.eip += getX86Length() - current.delta;
+          cpu.eip += getX86Length() - current.getDelta();
         } else {
-          cpu.eip += current.next.delta - current.delta;
+          cpu.eip += current.next.getDelta() - current.getDelta();
         }
       }
 
@@ -99,7 +99,7 @@ public class InterpretedProtectedModeBlock implements ProtectedModeCodeBlock {
       e.setX86Count(count);
       throw e;
     } catch (SelfModifyingCodeException e) {
-      cpu.eip += current.next.delta;
+      cpu.eip += current.next.getDelta();
       return Branch.Exception;
     } finally {
       b.postBlock(cpu);

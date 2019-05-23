@@ -33,7 +33,9 @@
 
 package com.github.smeny.jpc.debugger;
 
+import com.github.smeny.jpc.debugger.util.BasicTableModel;
 import com.github.smeny.jpc.debugger.util.UtilityFrame;
+import com.github.smeny.jpc.emulator.processor.Processor;
 
 import javax.swing.*;
 import java.awt.*;
@@ -398,7 +400,7 @@ public class BreakpointsFrame extends UtilityFrame implements PCListener
             case 1:
                 return bp.getName();
             case 2:
-                return new Boolean(bp.isPrimary());
+                return bp.isPrimary();
             default:
                 return "";
             }

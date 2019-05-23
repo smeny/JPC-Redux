@@ -32,24 +32,23 @@ import com.github.smeny.jpc.emulator.execution.ExecutableParameters;
 import com.github.smeny.jpc.emulator.processor.Processor;
 
 public class Lock extends Executable {
-  Executable parentExecutable;
+    private Executable parentExecutable;
 
-  public Lock(ExecutableParameters parameters) {
-    super(parameters.getBlockStart(), parameters.getEip());
-    parentExecutable = parameters.getParentExecutable().get();
-  }
+    Lock(ExecutableParameters parameters) {
+        super(parameters.getBlockStart(), parameters.getEip());
+        parameters.getParentExecutable().ifPresent(
+                executable -> this.parentExecutable = executable
+        );
+    }
 
-  public Branch execute(Processor cpu) {
-    cpu.lock(0);
-    Branch branch = parentExecutable.execute(cpu);
-    cpu.unlock(0);
-    return branch;
-  }
+    public Branch execute(Processor cpu) {
+        cpu.lock(0);
+        Branch branch = parentExecutable.execute(cpu);
+        cpu.unlock(0);
+        return branch;
+    }
 
-  public boolean isBranch() {
-    return parentExecutable.isBranch();
-  }
-
-  public void configure(Instruction i) {
-  }
+    public boolean isBranch() {
+        return parentExecutable.isBranch();
+    }
 }
