@@ -1,5 +1,5 @@
-# JPC
-This is a fork from the original project used for learning purpose
+# JPC Redux
+A fork from the original JPC project
 -----
 The JPC project was originally started in the Particle Physics department of Oxford university by Dr Rhys Newman and Dr Jeff Tseng. The original team included Chris Dennis, Ian Preston, Mike Moleschi and Guillaume Kirsch.
 
