@@ -27,44 +27,42 @@
 
 package com.github.smeny.jpc.emulator.execution.opcodes.vm;
 
-import com.github.smeny.jpc.emulator.execution.*;
-import com.github.smeny.jpc.emulator.execution.decoder.*;
-import com.github.smeny.jpc.emulator.processor.*;
-import com.github.smeny.jpc.emulator.processor.fpu64.*;
-import static com.github.smeny.jpc.emulator.processor.Processor.*;
+import com.github.smeny.jpc.emulator.execution.Executable;
+import com.github.smeny.jpc.emulator.execution.UCodes;
+import com.github.smeny.jpc.emulator.execution.decoder.Modrm;
+import com.github.smeny.jpc.emulator.execution.decoder.PeekableInputStream;
+import com.github.smeny.jpc.emulator.execution.decoder.Pointer;
+import com.github.smeny.jpc.emulator.processor.Processor;
 
-public class add_Eb_Gb_mem extends Executable
-{
+import static com.github.smeny.jpc.emulator.processor.Processor.Reg;
+
+public class add_Eb_Gb_mem extends Executable {
     final Pointer op1;
     final int op2Index;
 
-    public add_Eb_Gb_mem(int blockStart, int eip, int prefices, PeekableInputStream input)
-    {
+    public add_Eb_Gb_mem(int blockStart, int eip, int prefices, PeekableInputStream input) {
         super(blockStart, eip);
         int modrm = input.readU8();
         op1 = Modrm.getPointer(prefices, modrm, input);
         op2Index = Modrm.Gb(modrm);
     }
 
-    public Branch execute(Processor cpu)
-    {
+    public Branch execute(Processor cpu) {
         Reg op2 = cpu.regs[op2Index];
-        cpu.flagOp1 = (byte)op1.get8(cpu);
-        cpu.flagOp2 = (byte)op2.get8();
-        cpu.flagResult = (byte)(cpu.flagOp1 + cpu.flagOp2);
-        op1.set8(cpu, (byte)cpu.flagResult);
+        cpu.flagOp1 = (byte) op1.get8(cpu);
+        cpu.flagOp2 = (byte) op2.get8();
+        cpu.flagResult = (byte) (cpu.flagOp1 + cpu.flagOp2);
+        op1.set8(cpu, (byte) cpu.flagResult);
         cpu.flagIns = UCodes.ADD8;
         cpu.flagStatus = OSZAPC;
         return Branch.None;
     }
 
-    public boolean isBranch()
-    {
+    public boolean isBranch() {
         return false;
     }
 
-    public String toString()
-    {
+    public String toString() {
         return this.getClass().getName();
     }
 }

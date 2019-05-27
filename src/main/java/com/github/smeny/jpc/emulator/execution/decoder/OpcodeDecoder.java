@@ -28,13 +28,12 @@
 package com.github.smeny.jpc.emulator.execution.decoder;
 
 import com.github.smeny.jpc.emulator.execution.Executable;
+import com.github.smeny.jpc.emulator.execution.ExecutableParameters;
 
 /**
  * Converts a stream of x86 bytes into an Executable Opcode
- *
- * @author Ian Preston
  */
+@FunctionalInterface
 public interface OpcodeDecoder {
-  // source will be pointing at the modrm byte or the first byte after it
-  Executable decodeOpcode(int blockStart, int eip, int prefices, PeekableInputStream source);
+    Executable decodeOpcode(ExecutableParameters executableParameters);
 }

@@ -31,6 +31,7 @@ public class ExecutableParameters {
     private final OperatingMode operatingMode;
     private final Instruction instruction;
     private final int prefices;
+    // input will be pointing at the modrm byte or the first byte after it
     private final PeekableInputStream input;
     private final Executable parentExecutable;
 
