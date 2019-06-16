@@ -28,21 +28,27 @@ import java.util.Optional;
 public class ExecutableParameters {
     private final int blockStart;
     private final int eip;
+
     private final OperatingMode operatingMode;
     private final Instruction instruction;
-    private final int prefices;
+    private final Integer prefixes;
     // input will be pointing at the modrm byte or the first byte after it
     private final PeekableInputStream input;
     private final Executable parentExecutable;
+    private final Boolean operand32Bits;
+    private final Boolean address32Bits;
+
 
     private ExecutableParameters(Builder builder) {
         this.blockStart = builder.blockStart;
         this.eip = builder.eip;
         this.operatingMode = builder.operatingMode;
         this.instruction = builder.instruction;
-        this.prefices = builder.prefices;
+        this.prefixes = builder.prefixes;
         this.input = builder.input;
         this.parentExecutable = builder.parentExecutable;
+        this.operand32Bits = builder.operand32Bits;
+        this.address32Bits = builder.address32Bits;
     }
 
     public int getBlockStart() {
@@ -57,8 +63,8 @@ public class ExecutableParameters {
         return Optional.ofNullable(instruction);
     }
 
-    public int getPrefices() {
-        return prefices;
+    public Optional<Integer> getPrefixes() {
+        return Optional.ofNullable(prefixes);
     }
 
     public Optional<PeekableInputStream> getInput() {
@@ -69,8 +75,16 @@ public class ExecutableParameters {
         return Optional.ofNullable(parentExecutable);
     }
 
-    public OperatingMode getOperatingMode() {
-        return operatingMode;
+    public Optional<OperatingMode> getOperatingMode() {
+        return  Optional.ofNullable(operatingMode);
+    }
+
+    public Optional<Boolean> getOperand32Bits() {
+        return Optional.ofNullable(operand32Bits);
+    }
+
+    public Optional<Boolean> getAddress32Bits() {
+        return Optional.ofNullable(address32Bits);
     }
 
     public static class Builder {
@@ -80,10 +94,12 @@ public class ExecutableParameters {
 
         // Optional parameters
         private Instruction instruction;
-        private int prefices;
+        private Integer prefixes;
         private PeekableInputStream input;
         private Executable parentExecutable;
         private OperatingMode operatingMode;
+        private Boolean operand32Bits;
+        private Boolean address32Bits;
 
         public Builder(int blockStart, int eip) {
             this.blockStart = blockStart;
@@ -96,8 +112,8 @@ public class ExecutableParameters {
             this.instruction = instruction;
         }
 
-        public Builder prefices(int prefices) {
-            this.prefices = prefices;
+        public Builder prefixes(Integer prefixes) {
+            this.prefixes = prefixes;
             return this;
         }
 
@@ -113,6 +129,16 @@ public class ExecutableParameters {
 
         public Builder parentExecutable(Executable parentExecutable) {
             this.parentExecutable = parentExecutable;
+            return this;
+        }
+
+        public Builder operand32Bits(Boolean operand32Bits) {
+            this.operand32Bits = operand32Bits;
+            return this;
+        }
+
+        public Builder address32Bits(Boolean address32Bits) {
+            this.address32Bits = address32Bits;
             return this;
         }
 

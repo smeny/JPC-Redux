@@ -34,22 +34,45 @@ import com.github.smeny.jpc.emulator.execution.opcodes.AsciiAdjustAlAfterAdditio
 import com.github.smeny.jpc.emulator.execution.opcodes.AsciiAdjustAlAfterSubtraction;
 import com.github.smeny.jpc.emulator.execution.opcodes.AsciiAdjustAxAfterMultiplication;
 import com.github.smeny.jpc.emulator.execution.opcodes.Opcode;
-import com.github.smeny.jpc.emulator.execution.opcodes.add.Add_Eb_Gb;
-import com.github.smeny.jpc.emulator.execution.opcodes.add.Add_Eb_Gb_mem;
+import com.github.smeny.jpc.emulator.execution.opcodes.add.*;
+import com.github.smeny.jpc.emulator.execution.opcodes.pm.adc_Ew_Gw;
 
 /**
  * Source: http://ref.x86asm.net/geek32.html
  */
 public class ExecutableTables {
+
+    public static void populateOpcodes(OpcodeDecoder[] ops) {
+        ops[0x00] = parameters ->
+                parameters.getInput()
+                        .filter(input -> Modrm.isMem(input.peek()))
+                        .map(input -> new Add_Eb_Gb_mem(parameters))
+                        .orElse(new Add_Eb_Gb(parameters));
+
+        ops[0x01] = parameters ->
+                parameters.getInput()
+                        .filter(input -> Modrm.isMem(input.peek()))
+                        .map(input -> new Add_Ev_Gv_mem(parameters))
+                        .orElse(new Add_Ev_Gv(parameters));
+
+        ops[0x02] = parameters ->
+                parameters.getInput()
+                        .filter(input -> Modrm.isMem(input.peek()))
+                        .map(input -> new Add_Gb_Eb_mem(parameters))
+                        .orElse(new Add_Gb_Eb(parameters));
+
+        ops[0x03] = parameters ->
+                parameters.getInput()
+                        .filter(input -> Modrm.isMem(input.peek()))
+                        .map(input -> new Add_Gv_Ev_mem(parameters))
+                        .orElse(new Add_Gv_Ev(parameters));
+
+
+    }
+
     public static void populateRMOpcodes(OpcodeDecoder[] ops) {
 
-        ops[0x00] = parameters -> {
-            if (parameters.getInput().isPresent() && Modrm.isMem(parameters.getInput().get().peek())) {
-                return new com.github.smeny.jpc.emulator.execution.opcodes.rm.add_Eb_Gb_mem(parameters);
-            } else {
-                return new com.github.smeny.jpc.emulator.execution.opcodes.rm.add_Eb_Gb(parameters);
-            }
-        };
+
         ops[0x01] = parameters -> {
             if (parameters.getInput().isPresent() && Modrm.isMem(parameters.getInput().get().peek())) {
                 return new com.github.smeny.jpc.emulator.execution.opcodes.rm.add_Ew_Gw_mem(blockStart, eip, prefices, input);
@@ -13440,25 +13463,25 @@ public class ExecutableTables {
                 if (parameters.getInput().isPresent() && Modrm.isMem(parameters.getInput().get().peek())) {
                     return new com.github.smeny.jpc.emulator.execution.opcodes.pm.add_Ew_Gw_mem(blockStart, eip, prefices, input);
                 } else {
-                    return new com.github.smeny.jpc.emulator.execution.opcodes.pm.add_Ew_Gw(blockStart, eip, prefices, input);
+                    return new Add_Ev_Gv(blockStart, eip, prefices, input);
                 }
             }
         };
         ops[0x02] = new OpcodeDecoder() {
             public Executable decodeOpcode(ExecutableParameters parameters) {
                 if (parameters.getInput().isPresent() && Modrm.isMem(parameters.getInput().get().peek())) {
-                    return new com.github.smeny.jpc.emulator.execution.opcodes.pm.add_Gb_Eb_mem(blockStart, eip, prefices, input);
+                    return new Add_Gb_Eb_mem(blockStart, eip, prefices, input);
                 } else {
-                    return new com.github.smeny.jpc.emulator.execution.opcodes.pm.add_Gb_Eb(blockStart, eip, prefices, input);
+                    return new Add_Gb_Eb(blockStart, eip, prefices, input);
                 }
             }
         };
         ops[0x03] = new OpcodeDecoder() {
             public Executable decodeOpcode(ExecutableParameters parameters) {
                 if (parameters.getInput().isPresent() && Modrm.isMem(parameters.getInput().get().peek())) {
-                    return new com.github.smeny.jpc.emulator.execution.opcodes.pm.add_Gw_Ew_mem(blockStart, eip, prefices, input);
+                    return new Add_Gv_Ev_mem(blockStart, eip, prefices, input);
                 } else {
-                    return new com.github.smeny.jpc.emulator.execution.opcodes.pm.add_Gw_Ew(blockStart, eip, prefices, input);
+                    return new Add_Gv_Ev(blockStart, eip, prefices, input);
                 }
             }
         };
@@ -13548,7 +13571,7 @@ public class ExecutableTables {
                 if (parameters.getInput().isPresent() && Modrm.isMem(parameters.getInput().get().peek())) {
                     return new com.github.smeny.jpc.emulator.execution.opcodes.pm.adc_Ew_Gw_mem(blockStart, eip, prefices, input);
                 } else {
-                    return new com.github.smeny.jpc.emulator.execution.opcodes.pm.adc_Ew_Gw(blockStart, eip, prefices, input);
+                    return new adc_Ew_Gw(blockStart, eip, prefices, input);
                 }
             }
         };
@@ -27361,7 +27384,7 @@ public class ExecutableTables {
         ops[0x01] = new OpcodeDecoder() {
             public Executable decodeOpcode(ExecutableParameters parameters) {
                 if (parameters.getInput().isPresent() && Modrm.isMem(parameters.getInput().get().peek())) {
-                    return new com.github.smeny.jpc.emulator.execution.opcodes.vm.add_Ew_Gw_mem(blockStart, eip, prefices, input);
+                    return new Add_Ev_Gv_mem(blockStart, eip, prefices, input);
                 } else {
                     return new com.github.smeny.jpc.emulator.execution.opcodes.vm.add_Ew_Gw(blockStart, eip, prefices, input);
                 }

@@ -154,7 +154,7 @@ public class Modrm {
     }
 
     public static Pointer getPointer(ExecutableParameters parameters, int modrm) {
-        return getPointer(parameters.getPrefices(), modrm, parameters.getInput().get());
+        return getPointer(parameters.getPrefixes(), modrm, parameters.getInput().get());
     }
 
     public static Pointer getPointer(int prefices, int modrm, PeekableInputStream input) {

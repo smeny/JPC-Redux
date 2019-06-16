@@ -237,8 +237,10 @@ public class FastDecoder {
         opcode += b;
 
         ExecutableParameters parameters = new ExecutableParameters.Builder(blockStart, opStart)
-                .prefices(prefices)
+                .prefixes(prefices)
                 .input(input)
+                .address32Bits(addrSize)
+                .operand32Bits(is32Bit)
                 .build();
         return pmOps[opcode].decodeOpcode(parameters);
     }
@@ -274,8 +276,10 @@ public class FastDecoder {
         opcode += b;
 
         ExecutableParameters parameters = new ExecutableParameters.Builder(blockStart, opStart)
-                .prefices(prefices)
+                .prefixes(prefices)
                 .input(input)
+                .address32Bits(addrSize)
+                .operand32Bits(is32Bit)
                 .build();
         return rmOps[opcode].decodeOpcode(parameters);
     }
@@ -311,8 +315,10 @@ public class FastDecoder {
         opcode += b;
 
         ExecutableParameters parameters = new ExecutableParameters.Builder(blockStart, opStart)
-                .prefices(prefices)
+                .prefixes(prefices)
                 .input(input)
+                .address32Bits(addrSize)
+                .operand32Bits(is32Bit)
                 .build();
         return vmOps[opcode].decodeOpcode(parameters);
     }

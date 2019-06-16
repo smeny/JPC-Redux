@@ -41,9 +41,9 @@ public class Add_Eb_Gb_mem extends Executable {
     private final int op2Index;
 
     public Add_Eb_Gb_mem(ExecutableParameters parameters) {
-        super(parameters.getBlockStart(), parameters.getEip());
-        int modrm = parameters.getInput().get().readU8();
-        op1 = Modrm.getPointer(prefices, modrm, input);
+        super(parameters);
+        int modrm = getModRM(parameters);
+        op1 = Modrm.getPointer(parameters, modrm);
         op2Index = Modrm.Gb(modrm);
     }
 
@@ -58,11 +58,4 @@ public class Add_Eb_Gb_mem extends Executable {
         return Branch.None;
     }
 
-    public boolean isBranch() {
-        return false;
-    }
-
-    public String toString() {
-        return this.getClass().getName();
-    }
 }

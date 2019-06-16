@@ -25,46 +25,44 @@
     End of licence header
 */
 
-package com.github.smeny.jpc.emulator.execution.opcodes.pm;
+package com.github.smeny.jpc.emulator.execution.opcodes.add;
 
-import com.github.smeny.jpc.emulator.execution.*;
-import com.github.smeny.jpc.emulator.execution.decoder.*;
-import com.github.smeny.jpc.emulator.processor.*;
-import com.github.smeny.jpc.emulator.processor.fpu64.*;
-import static com.github.smeny.jpc.emulator.processor.Processor.*;
+import com.github.smeny.jpc.emulator.execution.Executable;
+import com.github.smeny.jpc.emulator.execution.ExecutableParameters;
+import com.github.smeny.jpc.emulator.execution.UCodes;
+import com.github.smeny.jpc.emulator.execution.decoder.Modrm;
+import com.github.smeny.jpc.emulator.execution.decoder.Pointer;
+import com.github.smeny.jpc.emulator.processor.Processor;
 
-public class add_Gw_Ew_mem extends Executable
-{
-    final int op1Index;
-    final Pointer op2;
+import static com.github.smeny.jpc.emulator.processor.Processor.Reg;
 
-    public add_Gw_Ew_mem(int blockStart, int eip, int prefices, PeekableInputStream input)
-    {
-        super(blockStart, eip);
-        int modrm = input.readU8();
+public class Add_Gv_Ev_mem extends Executable {
+    private final int op1Index;
+    private final Pointer op2;
+
+    public Add_Gv_Ev_mem(ExecutableParameters parameters) {
+        super(parameters);
+        int modrm = getModRM(parameters);
         op1Index = Modrm.Gw(modrm);
-        op2 = Modrm.getPointer(prefices, modrm, input);
+        op2 = Modrm.getPointer(parameters, modrm);
     }
 
-    public Branch execute(Processor cpu)
-    {
+    public Branch execute(Processor cpu) {
         Reg op1 = cpu.regs[op1Index];
         cpu.flagOp1 = op1.get16();
         cpu.flagOp2 = op2.get16(cpu);
-        cpu.flagResult = (short)(cpu.flagOp1 + cpu.flagOp2);
-        op1.set16((short)cpu.flagResult);
+        cpu.flagResult = (short) (cpu.flagOp1 + cpu.flagOp2);
+        op1.set16((short) cpu.flagResult);
         cpu.flagIns = UCodes.ADD16;
         cpu.flagStatus = OSZAPC;
         return Branch.None;
     }
 
-    public boolean isBranch()
-    {
+    public boolean isBranch() {
         return false;
     }
 
-    public String toString()
-    {
+    public String toString() {
         return this.getClass().getName();
     }
 }

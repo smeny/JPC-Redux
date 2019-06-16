@@ -56,13 +56,13 @@ public abstract class Executable {
 
   private final int delta;
 
-  public Executable(int blockStart, int eip) {
-    delta = eip - blockStart;
+  public Executable(ExecutableParameters parameters) {
+    delta = parameters.getEip() - parameters.getBlockStart();
   }
 
   public Executable(int blockStart, Instruction in) {
     // TODO: Explain why we need to cast this
-    this(blockStart, (int) in.eip);
+    this(new ExecutableParameters.Builder(blockStart, (int) in.eip).build());
   }
 
   public boolean isBranch() {
@@ -73,5 +73,13 @@ public abstract class Executable {
 
   public int getDelta() {
     return delta;
+  }
+
+  public String toString() {
+    return this.getClass().getName();
+  }
+
+  protected int getModRM(ExecutableParameters parameters) {
+    return parameters.getInput().get().readU8();
   }
 }

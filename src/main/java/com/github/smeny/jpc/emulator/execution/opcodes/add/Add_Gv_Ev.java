@@ -25,47 +25,37 @@
     End of licence header
 */
 
-package com.github.smeny.jpc.emulator.execution.opcodes.pm;
+package com.github.smeny.jpc.emulator.execution.opcodes.add;
 
-import com.github.smeny.jpc.emulator.execution.*;
-import com.github.smeny.jpc.emulator.execution.decoder.*;
-import com.github.smeny.jpc.emulator.processor.*;
-import com.github.smeny.jpc.emulator.processor.fpu64.*;
-import static com.github.smeny.jpc.emulator.processor.Processor.*;
+import com.github.smeny.jpc.emulator.execution.Executable;
+import com.github.smeny.jpc.emulator.execution.ExecutableParameters;
+import com.github.smeny.jpc.emulator.execution.UCodes;
+import com.github.smeny.jpc.emulator.execution.decoder.Modrm;
+import com.github.smeny.jpc.emulator.processor.Processor;
 
-public class add_Gw_Ew extends Executable
-{
-    final int op1Index;
-    final int op2Index;
+import static com.github.smeny.jpc.emulator.processor.Processor.Reg;
 
-    public add_Gw_Ew(int blockStart, int eip, int prefices, PeekableInputStream input)
-    {
-        super(blockStart, eip);
-        int modrm = input.readU8();
+public class Add_Gv_Ev extends Executable {
+    private final int op1Index;
+    private final int op2Index;
+
+    public Add_Gv_Ev(ExecutableParameters parameters) {
+        super(parameters);
+        int modrm = getModRM(parameters);
         op1Index = Modrm.Gw(modrm);
         op2Index = Modrm.Ew(modrm);
     }
 
-    public Branch execute(Processor cpu)
-    {
+    public Branch execute(Processor cpu) {
         Reg op1 = cpu.regs[op1Index];
         Reg op2 = cpu.regs[op2Index];
         cpu.flagOp1 = op1.get16();
         cpu.flagOp2 = op2.get16();
-        cpu.flagResult = (short)(cpu.flagOp1 + cpu.flagOp2);
-        op1.set16((short)cpu.flagResult);
+        cpu.flagResult = (short) (cpu.flagOp1 + cpu.flagOp2);
+        op1.set16((short) cpu.flagResult);
         cpu.flagIns = UCodes.ADD16;
         cpu.flagStatus = OSZAPC;
         return Branch.None;
     }
 
-    public boolean isBranch()
-    {
-        return false;
-    }
-
-    public String toString()
-    {
-        return this.getClass().getName();
-    }
 }
