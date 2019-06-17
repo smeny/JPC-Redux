@@ -37,7 +37,7 @@ public class fadd_ST extends Executable {
   private final int secondSt;
   private final int modrm;
 
-  public fadd_ST(int blockStart, int eip, int prefices, PeekableInputStream input, int firstSt, int secondSt) {
+  public fadd_ST(int firstSt, int secondSt, int blockStart, int eip, int prefices, PeekableInputStream input) {
     super(blockStart, eip);
     this.modrm = input.readU8();
     this.firstSt = firstSt;

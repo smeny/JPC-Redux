@@ -14,6 +14,8 @@ import com.github.smeny.jpc.emulator.execution.opcodes.add.Add_Gb_Eb;
 import com.github.smeny.jpc.emulator.execution.opcodes.add.Add_Gb_Eb_mem;
 import com.github.smeny.jpc.emulator.execution.opcodes.add.Add_Gv_Ev;
 import com.github.smeny.jpc.emulator.execution.opcodes.add.Add_Gv_Ev_mem;
+import com.github.smeny.jpc.emulator.execution.opcodes.pm.fadd_ST;
+import com.github.smeny.jpc.emulator.execution.opcodes.pm.faddp_ST;
 
 public class ExecutableTablesPM implements ExecutableTables {
 
@@ -2102,28 +2104,28 @@ public class ExecutableTablesPM implements ExecutableTables {
                 }
                 switch (modrm) {
                     case 0xc0:
-                        return new com.github.smeny.jpc.emulator.execution.opcodes.pm.fadd_ST0_ST0(
+                        return new fadd_ST(0, 0,
                                 parameters.getBlockStart(), parameters.getEip(), parameters.getPrefixes(), parameters.getInput());
                     case 0xc1:
-                        return new com.github.smeny.jpc.emulator.execution.opcodes.pm.fadd_ST0_ST1(
+                        return new fadd_ST(0, 1,
                                 parameters.getBlockStart(), parameters.getEip(), parameters.getPrefixes(), parameters.getInput());
                     case 0xc2:
-                        return new com.github.smeny.jpc.emulator.execution.opcodes.pm.fadd_ST0_ST2(
+                        return new fadd_ST(0, 2,
                                 parameters.getBlockStart(), parameters.getEip(), parameters.getPrefixes(), parameters.getInput());
                     case 0xc3:
-                        return new com.github.smeny.jpc.emulator.execution.opcodes.pm.fadd_ST0_ST3(
+                        return new fadd_ST(0, 3,
                                 parameters.getBlockStart(), parameters.getEip(), parameters.getPrefixes(), parameters.getInput());
                     case 0xc4:
-                        return new com.github.smeny.jpc.emulator.execution.opcodes.pm.fadd_ST0_ST4(
+                        return new fadd_ST(0, 4,
                                 parameters.getBlockStart(), parameters.getEip(), parameters.getPrefixes(), parameters.getInput());
                     case 0xc5:
-                        return new com.github.smeny.jpc.emulator.execution.opcodes.pm.fadd_ST0_ST5(
+                        return new fadd_ST(0, 5,
                                 parameters.getBlockStart(), parameters.getEip(), parameters.getPrefixes(), parameters.getInput());
                     case 0xc6:
-                        return new com.github.smeny.jpc.emulator.execution.opcodes.pm.fadd_ST0_ST6(
+                        return new fadd_ST(0, 6,
                                 parameters.getBlockStart(), parameters.getEip(), parameters.getPrefixes(), parameters.getInput());
                     case 0xc7:
-                        return new com.github.smeny.jpc.emulator.execution.opcodes.pm.fadd_ST0_ST7(
+                        return new fadd_ST(0, 7,
                                 parameters.getBlockStart(), parameters.getEip(), parameters.getPrefixes(), parameters.getInput());
                     case 0xc8:
                         return new com.github.smeny.jpc.emulator.execution.opcodes.pm.fmul_ST0_ST0(
@@ -2762,28 +2764,28 @@ public class ExecutableTablesPM implements ExecutableTables {
                 }
                 switch (modrm) {
                     case 0xc0:
-                        return new com.github.smeny.jpc.emulator.execution.opcodes.pm.fadd_ST0_ST0(
+                        return new fadd_ST(0, 0,
                                 parameters.getBlockStart(), parameters.getEip(), parameters.getPrefixes(), parameters.getInput());
                     case 0xc1:
-                        return new com.github.smeny.jpc.emulator.execution.opcodes.pm.fadd_ST1_ST0(
+                        return new fadd_ST(1, 0,
                                 parameters.getBlockStart(), parameters.getEip(), parameters.getPrefixes(), parameters.getInput());
                     case 0xc2:
-                        return new com.github.smeny.jpc.emulator.execution.opcodes.pm.fadd_ST2_ST0(
+                        return new fadd_ST(2, 0,
                                 parameters.getBlockStart(), parameters.getEip(), parameters.getPrefixes(), parameters.getInput());
                     case 0xc3:
-                        return new com.github.smeny.jpc.emulator.execution.opcodes.pm.fadd_ST3_ST0(
+                        return new fadd_ST(3, 0,
                                 parameters.getBlockStart(), parameters.getEip(), parameters.getPrefixes(), parameters.getInput());
                     case 0xc4:
-                        return new com.github.smeny.jpc.emulator.execution.opcodes.pm.fadd_ST4_ST0(
+                        return new fadd_ST(4, 0,
                                 parameters.getBlockStart(), parameters.getEip(), parameters.getPrefixes(), parameters.getInput());
                     case 0xc5:
-                        return new com.github.smeny.jpc.emulator.execution.opcodes.pm.fadd_ST5_ST0(
+                        return new fadd_ST(5, 0,
                                 parameters.getBlockStart(), parameters.getEip(), parameters.getPrefixes(), parameters.getInput());
                     case 0xc6:
-                        return new com.github.smeny.jpc.emulator.execution.opcodes.pm.fadd_ST6_ST0(
+                        return new fadd_ST(6, 0,
                                 parameters.getBlockStart(), parameters.getEip(), parameters.getPrefixes(), parameters.getInput());
                     case 0xc7:
-                        return new com.github.smeny.jpc.emulator.execution.opcodes.pm.fadd_ST7_ST0(
+                        return new fadd_ST(7, 0,
                                 parameters.getBlockStart(), parameters.getEip(), parameters.getPrefixes(), parameters.getInput());
                     case 0xc8:
                         return new com.github.smeny.jpc.emulator.execution.opcodes.pm.fmul_ST0_ST0(
@@ -3102,28 +3104,28 @@ public class ExecutableTablesPM implements ExecutableTables {
                 }
                 switch (modrm) {
                     case 0xc0:
-                        return new com.github.smeny.jpc.emulator.execution.opcodes.pm.faddp_ST0_ST0(
+                        return new faddp_ST(0, 0,
                                 parameters.getBlockStart(), parameters.getEip(), parameters.getPrefixes(), parameters.getInput());
                     case 0xc1:
-                        return new com.github.smeny.jpc.emulator.execution.opcodes.pm.faddp_ST1_ST0(
+                        return new faddp_ST(1, 0,
                                 parameters.getBlockStart(), parameters.getEip(), parameters.getPrefixes(), parameters.getInput());
                     case 0xc2:
-                        return new com.github.smeny.jpc.emulator.execution.opcodes.pm.faddp_ST2_ST0(
+                        return new faddp_ST(2, 0,
                                 parameters.getBlockStart(), parameters.getEip(), parameters.getPrefixes(), parameters.getInput());
                     case 0xc3:
-                        return new com.github.smeny.jpc.emulator.execution.opcodes.pm.faddp_ST3_ST0(
+                        return new faddp_ST(3, 0,
                                 parameters.getBlockStart(), parameters.getEip(), parameters.getPrefixes(), parameters.getInput());
                     case 0xc4:
-                        return new com.github.smeny.jpc.emulator.execution.opcodes.pm.faddp_ST4_ST0(
+                        return new faddp_ST(4, 0,
                                 parameters.getBlockStart(), parameters.getEip(), parameters.getPrefixes(), parameters.getInput());
                     case 0xc5:
-                        return new com.github.smeny.jpc.emulator.execution.opcodes.pm.faddp_ST5_ST0(
+                        return new faddp_ST(5, 0,
                                 parameters.getBlockStart(), parameters.getEip(), parameters.getPrefixes(), parameters.getInput());
                     case 0xc6:
-                        return new com.github.smeny.jpc.emulator.execution.opcodes.pm.faddp_ST6_ST0(
+                        return new faddp_ST(6, 0,
                                 parameters.getBlockStart(), parameters.getEip(), parameters.getPrefixes(), parameters.getInput());
                     case 0xc7:
-                        return new com.github.smeny.jpc.emulator.execution.opcodes.pm.faddp_ST7_ST0(
+                        return new faddp_ST(7, 0,
                                 parameters.getBlockStart(), parameters.getEip(), parameters.getPrefixes(), parameters.getInput());
                     case 0xc8:
                         return new com.github.smeny.jpc.emulator.execution.opcodes.pm.fmulp_ST0_ST0(

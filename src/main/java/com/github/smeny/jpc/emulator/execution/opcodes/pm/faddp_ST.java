@@ -32,8 +32,8 @@ import com.github.smeny.jpc.emulator.processor.Processor;
 
 public class faddp_ST extends fadd_ST {
 
-  public faddp_ST(int blockStart, int eip, int prefices, PeekableInputStream input, int firstSt, int secondSt) {
-    super(blockStart, eip, prefices, input, firstSt, secondSt);
+  public faddp_ST(int firstSt, int secondSt, int blockStart, int eip, int prefices, PeekableInputStream input) {
+    super(firstSt, secondSt, blockStart, eip, prefices, input);
   }
 
   @Override

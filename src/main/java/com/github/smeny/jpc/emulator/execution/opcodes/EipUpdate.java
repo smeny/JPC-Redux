@@ -31,7 +31,7 @@ public class EipUpdate extends Executable {
   public EipUpdate(ExecutableParameters parameters) {
     super(parameters.getBlockStart(), parameters.getEip());
 
-    final PeekableInputStream input = parameters.getInput().get();
+    final PeekableInputStream input = parameters.getInput();
     final int address = (int) input.getAddress();
     final int instructionLength = address - parameters.getEip();
 
