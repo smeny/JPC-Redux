@@ -25,7 +25,6 @@ import com.github.smeny.jpc.emulator.execution.ExecutableParameters;
 import com.github.smeny.jpc.emulator.execution.OperatingMode;
 import com.github.smeny.jpc.emulator.execution.StaticOpcodes;
 import com.github.smeny.jpc.emulator.execution.decoder.Modrm;
-import com.github.smeny.jpc.emulator.execution.decoder.PeekableInputStream;
 import com.github.smeny.jpc.emulator.processor.Processor;
 
 public class AsciiAdjustAxBeforeDivision extends Executable {
@@ -36,14 +35,12 @@ public class AsciiAdjustAxBeforeDivision extends Executable {
 
   public AsciiAdjustAxBeforeDivision(ExecutableParameters parameters) {
     super(parameters.getBlockStart(), parameters.getEip());
-    final PeekableInputStream input = parameters.getInput().get();
 
-    immediateByte = Modrm.Ib(input);
-    if (parameters.getOperatingMode() == OperatingMode.PROTECTED_MODE) {
-      base = BYTE_MASK & immediateByte;
-    } else {
-      base = immediateByte;
-    }
+    immediateByte = Modrm.Ib(parameters.getInput());
+    base = parameters.getOperatingMode()
+            .filter(mode -> mode == OperatingMode.PROTECTED_MODE)
+            .map(mode -> BYTE_MASK & immediateByte)
+            .orElse(immediateByte);
   }
 
   public Branch execute(Processor cpu) {

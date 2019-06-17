@@ -24,31 +24,21 @@ import com.github.smeny.jpc.emulator.execution.Executable;
 import com.github.smeny.jpc.emulator.execution.ExecutableParameters;
 import com.github.smeny.jpc.emulator.execution.StaticOpcodes;
 import com.github.smeny.jpc.emulator.execution.decoder.Modrm;
-import com.github.smeny.jpc.emulator.execution.decoder.PeekableInputStream;
 import com.github.smeny.jpc.emulator.processor.Processor;
 
 public class AsciiAdjustAxAfterMultiplication extends Executable {
-  private static final int BYTE_MASK = 0xFF;
+    private static final int BYTE_MASK = 0xFF;
 
-  private final int immediateByte;
+    private final int immediateByte;
 
-  public AsciiAdjustAxAfterMultiplication(ExecutableParameters parameters) {
-    super(parameters.getBlockStart(), parameters.getEip());
-    final PeekableInputStream input = parameters.getInput().get();
+    public AsciiAdjustAxAfterMultiplication(ExecutableParameters parameters) {
+        super(parameters.getBlockStart(), parameters.getEip());
+        immediateByte = Modrm.Ib(parameters.getInput());
+    }
 
-    immediateByte = Modrm.Ib(input);
-  }
+    public Branch execute(Processor cpu) {
+        StaticOpcodes.aam(cpu, BYTE_MASK & immediateByte);
+        return Branch.None;
+    }
 
-  public Branch execute(Processor cpu) {
-    StaticOpcodes.aam(cpu, BYTE_MASK & immediateByte);
-    return Branch.None;
-  }
-
-  public boolean isBranch() {
-    return false;
-  }
-
-  public String toString() {
-    return this.getClass().getName();
-  }
 }

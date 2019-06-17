@@ -36,9 +36,7 @@ public class Lock extends Executable {
 
     Lock(ExecutableParameters parameters) {
         super(parameters.getBlockStart(), parameters.getEip());
-        parameters.getParentExecutable().ifPresent(
-                executable -> this.parentExecutable = executable
-        );
+        this.parentExecutable = parameters.getParentExecutable();
     }
 
     public Branch execute(Processor cpu) {

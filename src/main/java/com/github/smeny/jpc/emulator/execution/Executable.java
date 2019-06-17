@@ -65,6 +65,10 @@ public abstract class Executable {
     this(new ExecutableParameters.Builder(blockStart, (int) in.eip).build());
   }
 
+  public Executable(int blockStart, int eip) {
+    this(new ExecutableParameters.Builder(blockStart, eip).build());
+  }
+
   public boolean isBranch() {
     return false;
   }
@@ -80,6 +84,6 @@ public abstract class Executable {
   }
 
   protected int getModRM(ExecutableParameters parameters) {
-    return parameters.getInput().get().readU8();
+    return parameters.getInput().readU8();
   }
 }

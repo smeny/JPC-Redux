@@ -49,9 +49,9 @@ public class FastDecoder {
     static Set<Class<?>> maybeDelayInts = new HashSet<>();
 
     static {
-        ExecutableTables.populateRMOpcodes(rmOps);
-        ExecutableTables.populatePMOpcodes(pmOps);
-        ExecutableTables.populateVMOpcodes(vmOps);
+        new ExecutableTablesRM().populateOpcodes(rmOps);
+        new ExecutableTablesPM().populateOpcodes(pmOps);
+        new ExecutableTablesVM().populateOpcodes(vmOps);
         delayInts.add(com.github.smeny.jpc.emulator.execution.opcodes.rm.sti.class);
         delayInts.add(com.github.smeny.jpc.emulator.execution.opcodes.pm.sti.class);
         delayInts.add(com.github.smeny.jpc.emulator.execution.opcodes.vm.sti.class);

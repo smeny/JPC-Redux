@@ -59,20 +59,20 @@ public class ExecutableParameters {
         return eip;
     }
 
-    public Optional<Instruction> getInstruction() {
-        return Optional.ofNullable(instruction);
+    public Instruction getInstruction() {
+        return instruction;
     }
 
-    public Optional<Integer> getPrefixes() {
-        return Optional.ofNullable(prefixes);
+    public Integer getPrefixes() {
+        return prefixes;
     }
 
-    public Optional<PeekableInputStream> getInput() {
-        return Optional.ofNullable(input);
+    public PeekableInputStream getInput() {
+        return input;
     }
 
-    public Optional<Executable> getParentExecutable() {
-        return Optional.ofNullable(parentExecutable);
+    public Executable getParentExecutable() {
+        return parentExecutable;
     }
 
     public Optional<OperatingMode> getOperatingMode() {
